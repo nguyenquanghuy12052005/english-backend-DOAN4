@@ -1,0 +1,8 @@
+{
+  "name": "english-backend",
+  "version": "1.0.0",
+  "description": " DOAN4 web leaning english",
+  "main": "src/server.ts",
+  "author": "Quang Huy",
+  "license": "MIT"
+}
