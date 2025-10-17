@@ -33,6 +33,22 @@ import { UserSchema } from '../users';
         return this.createToken(user);
     }
 
+
+     public async getCurrentLoginUser(userId: string) : Promise<IUser> {  
+
+        //kiểm tra email tồn tại chưa
+        // const user = await  this.userSchema.findOne(userId: userId);
+        //vì t tạo thêm cái userID nên không dùng findbyId để tìm theo _id được
+         const user = await this.userSchema.findOne({ userId: userId });
+        if( !user) {
+            throw new httpException(404, `user không tồn tại nha cu`)
+        }
+       
+        return user;
+    
+    }
+
+
 private createToken(user: IUser): TokenData {
     const dataInToken: DataStoredInToken = {id: user.userId};
     const secret: string = process.env.JWT_TOKEN_SECRET!;
