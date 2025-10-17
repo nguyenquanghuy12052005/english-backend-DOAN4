@@ -23,6 +23,7 @@ class App {
     this.connectToDatabase(); // Gọi kết nối DB
     this.initializeMiddleware();
     this.initializeRoutes(routes);
+    this.initializeErrorMiddleware();
   }
 
   //hàm run
@@ -52,9 +53,14 @@ class App {
         this.app.use(morgan('dev'));
         this.app.use(cors({origin: true, credentials: true}));
     }
-    this.app.use(errorMiddleware);
+ 
     this.app.use(express.json());
     this.app.use(express.urlencoded({extended: true}));
+
+  }
+
+  private  initializeErrorMiddleware() {
+    this.app.use(errorMiddleware);
   }
 
   // kết nối database

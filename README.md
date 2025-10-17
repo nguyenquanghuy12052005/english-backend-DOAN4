@@ -16,3 +16,8 @@
 -git config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -nosession"
 -git remote add origin https://github.com/nguyenquanghuy12052005/english-backend-DOAN4.git
 -git push -u origin main
+
+-https://www.npmjs.com/package/morgan
+-https://www.npmjs.com/package/validator
+-https://www.npmjs.com/package/winston
+-https://www.npmjs.com/package/bcryptjs
