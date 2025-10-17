@@ -7,7 +7,8 @@ import RegisterDto from './dtos/register.dtos';
 import UserSchema from './user.model';
 import gravatar from 'gravatar';
 import bcryptjs from 'bcryptjs';
-import IUser from './user.interface';
+// import IUser from './user.interface';
+import { IUser } from './user.interface';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
  class UserService {
@@ -66,5 +67,40 @@ private createToken(user: IUser): TokenData {
     }
 }
 
+
+// private createToken(user: IUser): TokenData {
+//     try {
+//         console.log('Creating token for user:', user.userId);
+        
+//         // ✅ FIX 1: Kiểm tra JWT secret
+//         const secret = process.env.JWT_TOKEN_SECRET;
+//         if (!secret) {
+//             console.error('JWT_TOKEN_SECRET is not defined in environment variables');
+//             throw new httpException(500, 'Server configuration error');
+//         }
+
+//         const dataInToken: DataStoredInToken = { id: user.userId };
+        
+//         // ✅ FIX 2: Thời gian hết hạn hợp lý (60 giây = 60, 1 giờ = 3600)
+//         const expiresIn: number = 60 * 60; // 1 giờ
+        
+//         console.log('JWT Secret exists:', !!secret);
+//         console.log('Expires in:', expiresIn);
+        
+//         const token = jwt.sign(dataInToken, secret, { expiresIn });
+//         console.log('Token created successfully');
+        
+//         // ✅ FIX 3: Trả về đúng structure
+//         return {
+//             token: token,
+//             expiresIn: expiresIn // Thêm field này
+//         };
+        
+//     } catch (error) {
+//         console.error('Token creation error:', error);
+//         throw new httpException(500, 'Failed to create authentication token');
+//     }
+// }
+
  }
- export default UserService;
+ export default UserService;    
