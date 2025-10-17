@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Logger } from './core/utils';
+import { errorMiddleware } from './core/middleware';
 
 class App {
   public app: express.Application;
@@ -18,9 +19,10 @@ class App {
     this.production = process.env.NODE_ENV =="production" ? true : false;
 
     
-    this.initializeRoutes(routes);
+  
     this.connectToDatabase(); // Gọi kết nối DB
     this.initializeMiddleware();
+    this.initializeRoutes(routes);
   }
 
   //hàm run
@@ -49,9 +51,10 @@ class App {
     else {
         this.app.use(morgan('dev'));
         this.app.use(cors({origin: true, credentials: true}));
-
-
     }
+    this.app.use(errorMiddleware);
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({extended: true}));
   }
 
   // kết nối database
