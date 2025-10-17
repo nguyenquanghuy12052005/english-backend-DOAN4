@@ -21,3 +21,4 @@
 -https://www.npmjs.com/package/validator
 -https://www.npmjs.com/package/winston
 -https://www.npmjs.com/package/bcryptjs
+-npm install reflect-metadata
