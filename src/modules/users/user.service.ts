@@ -102,17 +102,12 @@ import { IPagination } from '../../core/interface';
             updateData.avatar = newAvatar;
         } 
     }
-
-
-            //Tạo avatar mặc định dựa theo email
+        //Tạo avatar mặc định dựa theo email
       
 
         if (model.avatar) {
         updateData.avatar = model.avatar;
     }
-
- 
-
 
         if(model.password) {
             const salt = await bcryptjs.genSalt(10);
