@@ -1,3 +1,4 @@
+import IPagination from "./paging.interface";
 import Route from "./route.interface";
 
-export {Route};
+export {Route, IPagination};

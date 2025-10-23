@@ -48,6 +48,31 @@ import { UserSchema } from '../users';
     
     }
 
+    
+    //  public async getAllUser() : Promise<IUser[]> {  
+
+    //     //kiểm tra email tồn tại chưa
+    //     // const user = await  this.userSchema.findOne(userId: userId);
+    //     //vì t tạo thêm cái userID nên không dùng findbyId để tìm theo _id được
+    //      const users = await this.userSchema.find();
+    
+    //     return users;
+    
+    // }
+
+
+       
+    //  public async getAllUserPaging() : Promise<IUser[]> {  
+
+    //     //kiểm tra email tồn tại chưa
+    //     // const user = await  this.userSchema.findOne(userId: userId);
+    //     //vì t tạo thêm cái userID nên không dùng findbyId để tìm theo _id được
+    //      const users = await this.userSchema.find();
+    
+    //     return users;
+    
+    // }
+
 
 private createToken(user: IUser): TokenData {
     const dataInToken: DataStoredInToken = {id: user.userId};

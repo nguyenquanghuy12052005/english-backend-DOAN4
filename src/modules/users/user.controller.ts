@@ -37,4 +37,39 @@ export default class UsersController {
             next(error);
         }
     }
+
+       public getAllUser = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          const users =  await this.userService.getAllUser();
+        res.status(200).json(users);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+       public getAllUserPaging = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          // const keyword: string = req.params.keyword;
+            const keyword: string = (req.query.keyword as string) || '';
+          // const page: number = Number(req.params.page);
+            const page: number = Number(req.query.page);
+          //  console.log("keyword:", keyword, " | page:", page);
+          const pagination =  await this.userService.getAllUserPaging(keyword, page);
+        res.status(200).json(pagination);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+
+       public deleteUser = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          // const keyword: string = req.params.keyword      
+            const resultr = await this.userService.deleteUser(req.params.id)      
+        res.status(200).json(resultr);
+        } catch (error) {
+            next(error);
+        }
+    }
 }

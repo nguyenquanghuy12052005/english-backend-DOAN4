@@ -11,6 +11,7 @@ import bcryptjs from 'bcryptjs';
 import { IUser } from './user.interface';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+import { IPagination } from '../../core/interface';
  class UserService {
     public userSchema = UserSchema;
 
@@ -147,6 +148,92 @@ import mongoose from 'mongoose';
         return user;
     
     }
+
+  public async getAllUser() : Promise<IUser[]> {  
+
+        //kiểm tra email tồn tại chưa
+        // const user = await  this.userSchema.findOne(userId: userId);
+        //vì t tạo thêm cái userID nên không dùng findbyId để tìm theo _id được
+         const users = await this.userSchema.find();
+    
+        return users;
+    
+    }
+
+
+       
+//   public async getAllUserPaging(keyword: string, page: number): Promise<IPagination<IUser>> {
+//     const pageSize: number = Number(process.env.PAGE_SIZE) || 10;
+//     const skip = (page - 1) * pageSize;
+
+//     // Tạo query cơ bản MỘT LẦN
+//     let baseQuery = this.userSchema.find();
+
+//     if (keyword) {
+//         baseQuery = baseQuery.where('name', new RegExp(keyword, 'i'));  //không phân biệt hoa thượngf
+//     }
+
+//     // Dùng baseQuery cho cả hai mục đích
+//     const [users, total] = await Promise.all([
+//         baseQuery.clone().sort({ date: -1 }).skip(skip).limit(pageSize).exec(), //Lấy danh sách user
+//         baseQuery.countDocuments().exec() //Đếm tổng số kết quả
+//     ]);
+
+//     return {
+//         total: total,
+//         page: page,
+//         pageSize: pageSize,
+//         totalPages: Math.ceil(total / pageSize),
+//         items: users
+//     } as unknown as IPagination<IUser>;
+// }
+
+
+public async getAllUserPaging(keyword: string, page: number): Promise<IPagination<IUser>> {
+    const pageSize: number = Number(process.env.PAGE_SIZE) || 10;
+    const skip = (page - 1) * pageSize;
+
+   // console.log(` SEARCH: keyword="${keyword}", page=${page}, pageSize=${pageSize}, skip=${skip}`);
+
+    let baseQuery = this.userSchema.find();
+
+    if (keyword) {
+        baseQuery = baseQuery.where('name', new RegExp(keyword, 'i'));
+     //   console.log(`Applied filter: name contains "${keyword}"`);
+    }
+
+    const [users, total] = await Promise.all([
+        baseQuery.clone()
+            .sort({ createdAt: -1, _id: -1 })
+            .skip(skip)
+            .limit(pageSize)
+            .exec(),
+        baseQuery.countDocuments().exec()
+    ]);
+
+   // console.log(`RESULTS: total=${total}, found=${users.length} users`);
+  //  console.log(` Users found:`, users.map(user => ({ name: user.name, email: user.email })));
+
+    return {
+        total: total,
+        page: page,
+        pageSize: pageSize,
+        totalPages: Math.ceil(total / pageSize),
+        items: users
+    } as unknown as IPagination<IUser>;
+}
+
+
+public async deleteUser(userId: string) : Promise<IUser>{
+
+    const deleteUser = await this.userSchema.findByIdAndDelete(userId).exec();
+    if(!deleteUser) {
+        throw new httpException(409, "không tìm thấy người dùng")
+    }
+    return deleteUser;
+}
+
+
 
 
 private createToken(user: IUser): TokenData {
