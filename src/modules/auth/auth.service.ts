@@ -77,7 +77,7 @@ import { UserSchema } from '../users';
 private createToken(user: IUser): TokenData {
     const dataInToken: DataStoredInToken = {id: user.userId};
     const secret: string = process.env.JWT_TOKEN_SECRET!;
-    const expiresIn: number = 60;
+    const expiresIn: number = 120;
     return {
          token: jwt.sign(dataInToken,secret, {expiresIn:expiresIn}),
     }

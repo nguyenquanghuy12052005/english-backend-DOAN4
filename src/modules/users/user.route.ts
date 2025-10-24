@@ -3,7 +3,8 @@ import { Route } from "../../core/interface";
 import UsersController from "./user.controller";
 
 import RegisterDto from "./dtos/register.dtos";
-import { authMiddleware, validationMiddleware } from "../../core/middleware";
+import { adminMiddleware, authMiddleware, validationMiddleware } from "../../core/middleware";
+
 
 export default class UserRoute implements Route{
     public path ="/api/users";
@@ -36,7 +37,7 @@ export default class UserRoute implements Route{
         this.router.get(this.path + '/:id', this.usersController.getUserById); 
 
        
-               this.router.delete(this.path +'/:id',authMiddleware, this.usersController.deleteUser); 
+               this.router.delete(this.path +'/:id',authMiddleware,adminMiddleware, this.usersController.deleteUser); 
 
                // Thêm XP cho user
   this.router.post(this.path + '/:id/xp', authMiddleware, this.usersController.addXP);
