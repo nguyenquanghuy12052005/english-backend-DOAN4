@@ -116,7 +116,7 @@ import { IPagination } from '../../core/interface';
         }
 
        // Thực hiện update
-    updateUserById = await this.userSchema.findByIdAndUpdate(
+       updateUserById = await this.userSchema.findByIdAndUpdate(
         userID, 
         updateData,
         { new: true } 
@@ -226,6 +226,40 @@ public async deleteUser(userId: string) : Promise<IUser>{
         throw new httpException(409, "không tìm thấy người dùng")
     }
     return deleteUser;
+}
+
+
+//thêm  điểm kinh nghiệm (XP)
+public async addXP(userId: string, xp: number) : Promise<IUser> {
+    const user = await this.userSchema.findById(userId);
+
+     if (!user) throw new httpException(404, 'User not found');
+
+      // Thêm XP
+      user.xpPoints += xp;
+
+      //tăng level
+      const newLevel = Math.floor(user.xpPoints / 100 + 1);
+      if(newLevel > user.level ) {
+        user.level = newLevel;
+        // thêm logic thông báo lên level (làm sau)*****************
+      }
+
+      return await user.save();
+}
+
+//theo dõi trang thái level, điểm
+public async getUserProgress(userId: string ) :Promise<{xpPoints: number, level: number, xpToNextLevel: number}> {
+
+     const user = await this.userSchema.findById(userId);
+     if (!user) throw new httpException(404, 'User not found');
+
+
+       return {
+      xpPoints: user.xpPoints,
+      level: user.level,
+      xpToNextLevel: (user.level * 100) - user.xpPoints // XP cần để lên level tiếp theo
+    };
 }
 
 

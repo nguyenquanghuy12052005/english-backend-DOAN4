@@ -62,7 +62,6 @@ export default class UsersController {
     }
 
 
-
        public deleteUser = async (req: Request, res: Response, next: NextFunction) =>{
         try {
           // const keyword: string = req.params.keyword      
@@ -72,4 +71,26 @@ export default class UsersController {
             next(error);
         }
     }
+
+   public addXP = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+            const userId: string = req.params.id;
+            const xp: number = Number(req.body.xp)
+
+            const user = await this.userService.addXP(userId, xp);
+        res.status(200).json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public getUserProgress = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId: string = req.params.id;
+      const progress = await this.userService.getUserProgress(userId);
+      res.status(200).json(progress);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

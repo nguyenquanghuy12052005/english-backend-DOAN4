@@ -37,6 +37,12 @@ export default class UserRoute implements Route{
 
        
                this.router.delete(this.path +'/:id',authMiddleware, this.usersController.deleteUser); 
+
+               // Thêm XP cho user
+  this.router.post(this.path + '/:id/xp', authMiddleware, this.usersController.addXP);
+  
+  // Lấy tiến trình học tập
+  this.router.get(this.path + '/:id/progress', authMiddleware, this.usersController.getUserProgress);
       
     }
 } 
