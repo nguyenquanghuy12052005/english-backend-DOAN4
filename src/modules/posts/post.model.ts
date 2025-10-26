@@ -1,4 +1,4 @@
-    import mongoose, { model } from "mongoose";
+import mongoose, { Document, model } from "mongoose";
 import { IPost } from "./post.interface";
 
     const PostSchema  = new mongoose.Schema({

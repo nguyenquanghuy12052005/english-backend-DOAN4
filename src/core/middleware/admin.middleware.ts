@@ -26,6 +26,7 @@ import { UserSchema } from "../../modules/users";
     //   throw new httpException(403, 'Admin access required');
     // }
 
+        // Kiểm tra role
      if (userFromDB.role !== 'admin') {
       throw new httpException(403, 'Admin access required');
     }

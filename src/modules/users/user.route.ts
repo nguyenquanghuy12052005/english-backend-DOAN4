@@ -23,7 +23,7 @@ export default class UserRoute implements Route{
 
        
 
-        this.router.put(this.path + '/:id', validationMiddleware(RegisterDto, true), this.usersController.updateUser); 
+        this.router.put(this.path + '/:id',authMiddleware,  validationMiddleware(RegisterDto, true), this.usersController.updateUser); 
            // this.router.get(this.path + '/paging/:page/:keyword?', this.usersController.getAllUserPaging); 
 
 
