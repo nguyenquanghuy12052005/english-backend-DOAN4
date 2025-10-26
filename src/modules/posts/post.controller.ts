@@ -104,5 +104,36 @@ export default class PostsController {
         }
     }
 
+
+
+      public addComment = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          // const keyword: string = req.params.keyword     
+                  const  userId = req.user.id; 
+                  const  content = req.body.content; 
+                  const postId = req.params.id;
+            const comment = await this.postService.addComment({userId: userId,content:content,postId: postId})      
+        res.status(200).json(comment);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+       public deleteComment = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          // const keyword: string = req.params.keyword  
+             const commentId = req.params.commentId;    
+             const postId = req.params.id;
+                  const  userId = req.user.id; 
+                  
+               
+            const deleteComment = await this.postService.deleteComment(commentId, postId,userId)      
+        res.status(200).json(deleteComment);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     
 }

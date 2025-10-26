@@ -4,6 +4,7 @@ import { Route } from "../../core/interface";
 import { adminMiddleware, authMiddleware, validationMiddleware } from "../../core/middleware";
 import PostsController from "./post.controller";
 import CreatePostDto from "./dto/create_post_dto";
+import CreateCommentDto from "./dto/create_comment_dto";
 
 
 export default class PostRoute implements Route{
@@ -37,6 +38,10 @@ export default class PostRoute implements Route{
 
         this.router.put(this.path + '/like/:id',authMiddleware, this.postsController.likePost); 
         this.router.put(this.path + '/unlike/:id', authMiddleware,this.postsController.unlikePost); 
+
+
+         this.router.post(this.path + '/comments/:id',authMiddleware,validationMiddleware(CreateCommentDto, true), this.postsController.addComment); 
+        this.router.delete(this.path + '/comments/:id/:commentId', authMiddleware,this.postsController.deleteComment); 
 
 
     }
