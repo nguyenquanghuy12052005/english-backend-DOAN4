@@ -3,7 +3,7 @@ import { httpException } from "../../core/exceptions";
 import { IPagination } from "../../core/interface";
 import { UserSchema } from "../users";
 import CreatePostDto from "./dto/create_post_dto";
-import { IPost } from "./post.interface";
+import { Ilike, IPost } from "./post.interface";
 
 export default class PostService {
     public async creatPost(userId: string, postDto: CreatePostDto) : Promise<IPost> {
@@ -98,6 +98,40 @@ public async deletePost(userId: string, postId: string): Promise<IPost> {
    }
 
    return deletedPost;
+}
+
+public async likePost(userId: string,  postId: string) : Promise<Ilike[]> {
+   const post = await PostSchema.findById(postId).exec();
+   if(!post) throw new httpException(404, "Không tìm thấy bài viết");
+
+    //  Kiểm tra user đã like bài viết này chưa
+   if(post.like.some((like: Ilike) => like.user.toString() === userId)){
+      throw new httpException(400, "bài viết đã like");
+   }
+
+   //Thêm like vào đầu mảng (unshift = thêm vào đầu)
+   post.like.unshift({user: userId});
+
+   await post.save();
+   return post.like;
+
+}
+
+
+public async unlikePost(userId: string,  postId: string) : Promise<Ilike[]> {
+   const post = await PostSchema.findById(postId).exec();
+   if(!post) throw new httpException(404, "Không tìm thấy bài viết");
+
+   if(!post.like.some((like: Ilike) => like.user.toString() === userId)){
+      throw new httpException(400, "bài viết chưa like");
+   }
+
+   // //  Lọc bỏ like của user khỏi mảng
+  post.like =  post.like.filter(({user}) =>user.toString() !== userId );
+
+   await post.save();
+   return post.like;
+
 }
 
 }

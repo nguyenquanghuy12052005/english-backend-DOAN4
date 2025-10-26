@@ -77,5 +77,32 @@ export default class PostsController {
         }
     }
 
+
+    
+      public likePost = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          // const keyword: string = req.params.keyword     
+                  const  userId = req.user.id; 
+                  const postId = req.params.id;
+            const likes = await this.postService.likePost(userId,postId)      
+        res.status(200).json(likes);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+       public unlikePost = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          // const keyword: string = req.params.keyword     
+                  const  userId = req.user.id; 
+                  const postId = req.params.id;
+            const likes = await this.postService.unlikePost(userId,postId)      
+        res.status(200).json(likes);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     
 }
