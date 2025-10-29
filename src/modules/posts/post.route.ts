@@ -12,7 +12,6 @@ export default class PostRoute implements Route{
     public router = Router();
 
     public postsController = new PostsController();
-
     constructor(){
         this.initializeRoutes();
     }
