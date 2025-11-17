@@ -17,7 +17,7 @@ export default class ChatRoute implements Route{
     }
 
     private initializeRoutes() {
-        // post data lên http://localhost:5000/api/posts
+        // post data lên http://localhost:5000/api/chats
  
         this.router.post(this.path,authMiddleware, validationMiddleware(SendMessageDto, true), this.chatController.createChat); 
 

@@ -14,7 +14,7 @@ class App {
   public production: Boolean;
 
   constructor(routes: Route[]) {
-    this.app = express();
+    this.app = express(); //Tạo HTTP server
     this.port = process.env.PORT || 5000;
     this.production = process.env.NODE_ENV =="production" ? true : false;
 

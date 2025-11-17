@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import { httpException } from "../../core/exceptions";
 import { UserSchema } from "../users";
 import { IChat, IMessages } from "./chat.interface";
