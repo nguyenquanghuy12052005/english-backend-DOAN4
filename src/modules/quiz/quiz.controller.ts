@@ -4,6 +4,7 @@ import CreateQuizDto from "./dtos/create_quiz.dtos";
 
 import { TokenData } from "../auth";
 import { IQuiz } from "./quiz.interface";
+import SubmitQuizDto from "./dtos/submit_quiz.dtos";
 
 export default class QuizController {
     private quizService = new QuizService();
@@ -22,35 +23,53 @@ public createQuiz = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-    //  public getVocById = async (req: Request, res: Response, next: NextFunction) =>{
-    //     try {
-    //       const vocId: string = req.params.id;
-    //     const voc =  await this.vocalService.getVocById(vocId);
-    //     res.status(200).json(voc);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
+     public getQuizById = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          const quizId: string = req.params.id;
+        const quiz =  await this.quizService.getQuizById(quizId);
+        res.status(200).json(quiz);
+        } catch (error) {
+            next(error);
+        }
+    }
 
-    // public updateVoval = async (req: Request, res: Response, next: NextFunction) =>{
-    //     try {
-    //       const vocalId: string = req.params.id;
-    //       const model: CreateVocalDto = req.body;
-    //      const result: IVocal = await this.vocalService.updateVoc(vocalId,model);
-    //     res.status(200).json(result);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
+    public updateQuiz = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          const quizId: string = req.params.id;
+          const model: CreateQuizDto = req.body;
+         const result: IQuiz = await this.quizService.updateQuiz(quizId,model);
+        res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
 
-    //    public getAllVoc = async (req: Request, res: Response, next: NextFunction) =>{
-    //     try {
-    //       const vocs =  await this.vocalService.getAllVoc();
-    //     res.status(200).json(vocs);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
+       public getAllQuiz = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          const quizzes =  await this.quizService.getAllQUiz();
+        res.status(200).json(quizzes);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+
+     public submitQuiz = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const model: SubmitQuizDto = req.body;
+            
+            // Lấy user ID từ token sau khi middleware ở cái route
+          const  userId = req.user.id;
+            
+        
+          
+            const result = await this.quizService.submitQuiz(userId, model);
+            res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
 
   //      public getAllUserPaging = async (req: Request, res: Response, next: NextFunction) =>{
   //       try {
@@ -67,15 +86,15 @@ public createQuiz = async (req: Request, res: Response, next: NextFunction) => {
   //   }
 
 
-    //    public deleteVoc = async (req: Request, res: Response, next: NextFunction) =>{
-    //     try {
-    //       // const keyword: string = req.params.keyword      
-    //         const resultr = await this.vocalService.deleteVoc(req.params.id)      
-    //     res.status(200).json(resultr);
-    //     } catch (error) {
-    //         next(error);
-    //     }
-    // }
+       public deleteQuiz = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          // const keyword: string = req.params.keyword      
+            const resultr = await this.quizService.deleteQuiz(req.params.id)      
+        res.status(200).json(resultr);
+        } catch (error) {
+            next(error);
+        }
+    }
 
   //  public addXP = async (req: Request, res: Response, next: NextFunction) =>{
   //       try {

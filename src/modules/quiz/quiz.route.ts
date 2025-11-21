@@ -12,22 +12,22 @@ export default class QuizRoute implements Route{
 
     public quizController = new QuizController();
 
-    constructor(){  console.log('🎯 QuizRoute constructor called');
+    constructor(){  
         this.initializeRoutes();
     }
 
     private initializeRoutes() {
-      console.log('🔄 Initializing quiz routes...');
+      
     
     this.router.post(this.path, (req, res, next) => {
-        console.log('✅ POST /api/quizzes reached!');
+      
         this.quizController.createQuiz(req, res, next);
     });
 
 
        
 
-  //      this.router.put(this.path + '/:id',  validationMiddleware(CreateVocalDto, true), this.vocalController.updateVoval); 
+       this.router.put(this.path + '/:id',  validationMiddleware(CreateQuizDto, true), this.quizController.updateQuiz); 
 //            // this.router.get(this.path + '/paging/:page/:keyword?', this.usersController.getAllUserPaging); 
 
 
@@ -37,17 +37,21 @@ export default class QuizRoute implements Route{
 
 
 
-//  this.router.get(this.path, this.vocalController.getAllVoc); 
-//         this.router.get(this.path + '/:id', this.vocalController.getVocById); 
+ this.router.get(this.path, this.quizController.getAllQuiz); 
+        this.router.get(this.path + '/:id', this.quizController.getQuizById); 
 
        
-//                this.router.delete(this.path +'/:id', this.vocalController.deleteVoc); 
+               this.router.delete(this.path +'/:id', this.quizController.deleteQuiz); 
 
 //                // Thêm XP cho user
 //   this.router.post(this.path + '/:id/xp', authMiddleware, this.usersController.addXP);
   
 //   // Lấy tiến trình học tập
 //   this.router.get(this.path + '/:id/progress', authMiddleware, this.usersController.getUserProgress);
-      
+    
+
+//submit
+
+ this.router.post(this.path + '/submit',authMiddleware, this.quizController.submitQuiz);
     }
 } 

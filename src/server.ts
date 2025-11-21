@@ -24,18 +24,18 @@ const routes = [
     
 ];
 
-routes.forEach(route => {
-    console.log(`🔗 Registering route: ${route.path}`);
+// routes.forEach(route => {
+//     console.log(`🔗 Registering route: ${route.path}`);
 
     
-    // Log tất cả các route con
-    route.router.stack.forEach((middleware: any) => {
-        if (middleware.route) {
-            const methods = Object.keys(middleware.route.methods).join(', ').toUpperCase();
-            console.log(`   ${methods}${middleware.route.path}`);
-        }
-    });
-});
+//     // Log tất cả các route con
+//     route.router.stack.forEach((middleware: any) => {
+//         if (middleware.route) {
+//             const methods = Object.keys(middleware.route.methods).join(', ').toUpperCase();
+//             console.log(`   ${methods}${middleware.route.path}`);
+//         }
+//     });
+// });
 const app = new App(routes);
 
 app.listen(); 
