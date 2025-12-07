@@ -4,6 +4,7 @@ export interface IPost{
     name: string;
     content: string;
     title: string;
+    image: string;
     avatar: string;
     like: Ilike[],
     comments: Icomments[],

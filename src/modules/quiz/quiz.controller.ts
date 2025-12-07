@@ -96,6 +96,18 @@ public createQuiz = async (req: Request, res: Response, next: NextFunction) => {
         }
     }
 
+
+    
+     public getQuizResultById = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+          const quizId: string = req.params.id;
+        const quiz =  await this.quizService.getQuizResultById(quizId);
+        res.status(200).json(quiz);
+        } catch (error) {
+            next(error);
+        }
+    }
+
   //  public addXP = async (req: Request, res: Response, next: NextFunction) =>{
   //       try {
   //           const userId: string = req.params.id;

@@ -43,6 +43,8 @@ export default class QuizRoute implements Route{
        
                this.router.delete(this.path +'/:id', this.quizController.deleteQuiz); 
 
+                this.router.get(this.path + '/submit/:id', this.quizController.getQuizResultById); 
+
 //                // Thêm XP cho user
 //   this.router.post(this.path + '/:id/xp', authMiddleware, this.usersController.addXP);
   

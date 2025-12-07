@@ -19,6 +19,9 @@ import { IPost } from "./post.interface";
          title : {
             type : String
         },
+          image : {
+            type : String
+        },
         like : [{
             user: {
                 type: mongoose.Schema.Types.ObjectId

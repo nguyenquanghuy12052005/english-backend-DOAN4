@@ -342,6 +342,16 @@ private async calculateScore(quiz: IQuiz, userAnswers: UserAnswerDto[]) {
 
 
 
+//  public async getAllQuiz() : Promise<IQuiz[]> {
+//    const quizzes = await QuizResultSchema.find().sort({ createdAt: -1, _id: -1}).exec();
+//    return quizzes;
+//  }
+
+ public async getQuizResultById(quizId: string) : Promise<IQuizResult> {
+   const quiz = await QuizResultSchema.findById(quizId).exec();
+        if(!quiz)  throw new httpException(404, " lỗi không có bài viết đã nộp") ;
+        return quiz;
+ }
 
 
 // private createToken(user: IUser): TokenData {

@@ -6,4 +6,8 @@ export default class CreatePostDto {
 
     @IsString()
     public title: string | undefined;
+
+
+    @IsString()
+    public image: string | undefined;
 }

@@ -17,6 +17,7 @@ export default class PostService {
          content: postDto.content,
          name: user.name,
          title: postDto.title,
+         image: postDto.image,
          avatar: user.avatar,
          user: userId
       });
