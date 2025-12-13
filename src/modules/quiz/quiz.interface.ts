@@ -16,7 +16,7 @@ export interface IQuiz {
 
 export interface IQuestion {
     _id: string;
-    questionText: string;       // nội dung câu hỏi
+    questionText: string[];       // nội dung câu hỏi
     questionImage?: string;     // ảnh kèm theo
     questionAudio?: string;     // audio (cho part 1,2,3,4)
     options: IOption[];         // danh sách đáp án

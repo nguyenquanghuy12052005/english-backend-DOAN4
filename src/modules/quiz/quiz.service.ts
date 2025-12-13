@@ -27,6 +27,9 @@ class QuizService {
                 throw new httpException(400, "Quiz đã tồn tại");
             }
 
+
+
+            
             // Validate số lượng câu hỏi
             if (!quizDto.questions || quizDto.questions.length === 0) {
                 throw new httpException(400, "Quiz phải có ít nhất 1 câu hỏi");
@@ -37,6 +40,18 @@ class QuizService {
                 if (!question.options || question.options.length < 2) {
                     throw new httpException(400, `Câu hỏi "${question.questionText}" phải có ít nhất 2 lựa chọn`);
                 }
+
+                  // Validate questionText phải có ít nhất 1 phần tử
+            if (!question.questionText || question.questionText.length === 0) {
+                throw new httpException(400, "Câu hỏi phải có ít nhất 1 phần text");
+            }
+
+               // Validate mỗi phần text không rỗng
+            for (const text of question.questionText) {
+                if (!text || text.trim().length === 0) {
+                    throw new httpException(400, "Mỗi phần text của câu hỏi không được rỗng");
+                }
+            }
                 
                 // Validate correctAnswer phải tồn tại trong options
                 const optionExists = question.options.some(opt => 
@@ -47,6 +62,8 @@ class QuizService {
                 }
             }
 
+
+            
             // Tạo quiz mới
             const newQuiz = new QuizSchema({
                 title: quizDto.title,

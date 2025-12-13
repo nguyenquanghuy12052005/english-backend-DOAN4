@@ -8,7 +8,7 @@ const OptionSchema = new mongoose.Schema({
 });
 
 const QuestionSchema = new mongoose.Schema({
-    questionText: { type: String, required: true },
+    questionText: {   type: [String], required: true },
     questionImage: String,
     questionAudio: String,
     options: { type: [OptionSchema], required: true },

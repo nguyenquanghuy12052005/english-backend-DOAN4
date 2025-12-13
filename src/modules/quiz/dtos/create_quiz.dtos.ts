@@ -13,9 +13,10 @@ export class OptionDto {
 }
 
 export class QuestionDto {
-    @IsString()
-    @IsNotEmpty()
-    questionText!: string;
+    @IsArray()
+    @IsString({ each: true }) 
+    @IsNotEmpty({ each: true })
+    questionText!: string[];
 
     @IsString()
     @IsOptional()
