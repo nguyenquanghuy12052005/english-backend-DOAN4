@@ -64,18 +64,23 @@ class MeaningsDto {
   @IsString({ each: true })
   public synonyms: string[] | undefined;
 
+
+
   constructor(
     partOfSpeech?: string,
     meaning_vi?: string,
     definition_en?: string,
     examples?: ExampleDto[],
-    synonyms?: string[]
+    synonyms?: string[],
+ 
   ) {
     this.partOfSpeech = partOfSpeech;
     this.meaning_vi = meaning_vi;
     this.definition_en = definition_en;
     this.examples = examples;
     this.synonyms = synonyms;
+
+
   }
 }
 
@@ -102,6 +107,11 @@ export default class CreateVocalDto {
   @IsNotEmpty()
   public voice: string | undefined;
 
+  
+    @IsArray()
+  @IsString({ each: true })
+  public user_learned: string[] | undefined;
+
   @IsString()
   @IsNotEmpty()
   @IsEnum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'IELTS', 'TOEIC', 'TOEFL', 'General'])
@@ -113,7 +123,8 @@ export default class CreateVocalDto {
     image?: string,
     meanings?: MeaningsDto[],
     voice?: string,
-    level?: string
+    level?: string,
+    user_learned?: string[]
   ) {
     this.word = word;
     this.phonetic = phonetic;
@@ -121,5 +132,6 @@ export default class CreateVocalDto {
     this.meanings = meanings;
     this.voice = voice;
     this.level = level;
+    this.user_learned = user_learned;
   }
 }

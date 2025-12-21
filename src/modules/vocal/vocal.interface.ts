@@ -7,6 +7,7 @@ export interface IVocal{
     voice: string;
     level: string; 
     createdAt: Date;
+    user_learned: string[];
 }
 
 export interface IPhonetic {

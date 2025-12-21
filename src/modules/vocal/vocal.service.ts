@@ -1,5 +1,5 @@
  
- import { email } from 'envalid';
+import { email } from 'envalid';
 import { httpException } from '../../core/exceptions';
 import { isEmptyObj } from '../../core/utils';
 import { DataStoredInToken, TokenData } from '../auth';
@@ -33,7 +33,8 @@ import { IPagination } from '../../core/interface';
             image: vocalDto.image,
             meanings: vocalDto.meanings || [],
             voice: vocalDto.voice,
-            level: vocalDto.level
+            level: vocalDto.level,
+            user_learned: vocalDto.user_learned || []
         });
         const vocal = await newVocal.save();
         return vocal;
