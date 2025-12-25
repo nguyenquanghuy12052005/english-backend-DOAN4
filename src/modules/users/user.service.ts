@@ -1,5 +1,4 @@
- 
- import { email } from 'envalid';
+import { email } from 'envalid';
 import { httpException } from '../../core/exceptions';
 import { isEmptyObj } from '../../core/utils';
 import { DataStoredInToken, TokenData } from '../auth';
@@ -12,36 +11,39 @@ import { IUser } from './user.interface';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { IPagination } from '../../core/interface';
- class UserService {
+
+class UserService {
     public userSchema = UserSchema;
 
-    public async createUser( model: RegisterDto) : Promise<TokenData> {  
-        
-        //kiểm tra rỗng
-        if(isEmptyObj(model)){
-            throw new httpException(400,'lỗi đăng ký rỗng rồi cu');
+    public async createUser(model: RegisterDto): Promise<TokenData> {
+        // 1. Kiểm tra rỗng
+        if (isEmptyObj(model)) {
+            throw new httpException(400, 'Lỗi: Dữ liệu đăng ký rỗng');
         }
 
-        //kiểm tra email tồn tại chưa
-        const user = await  this.userSchema.findOne({email: model.email});
-        if( user) {
-            throw new httpException(409, `email của cu đã tồn tại ${model.email}`)
+        // 2. Kiểm tra password và email bắt buộc phải có
+        if (!model.email || !model.password) {
+            throw new httpException(400, 'Vui lòng nhập đầy đủ Email và Mật khẩu');
         }
 
-        //Tạo avatar mặc định dựa theo email
-        const avatar = gravatar.url(model.email!, {
+        // 3. Kiểm tra email tồn tại chưa
+        const user = await this.userSchema.findOne({ email: model.email });
+        if (user) {
+            throw new httpException(409, `Email ${model.email} đã tồn tại`)
+        }
+
+        const avatar = gravatar.url(model.email, {
             size: '200',
             rating: 'g',
             default: 'mm'
         });
 
-          //Mã hoá mật khẩu
         const salt = await bcryptjs.genSalt(10);
-        const  hashedPassword = await bcryptjs.hash(model.password!, salt);
+        // Fix TS: model.password!
+        const hashedPassword = await bcryptjs.hash(model.password!, salt);
 
-
-        const userId = new mongoose.Types.ObjectId().toString(); //tạo userID ngẫu nhiên
-         //Tạo user trong MongoDB
+        const userId = new mongoose.Types.ObjectId().toString();
+        
         const createUser: IUser = await this.userSchema.create({
             userId,
             email: model.email,
@@ -52,263 +54,218 @@ import { IPagination } from '../../core/interface';
             xpPoints: 0,
             level: 1,
             role: "user",
-
         });
 
-        //rả về token đăng nhập luôn
         return this.createToken(createUser);
     }
 
+    // =========================================================================
+    // PHẦN MỚI THÊM: CREATE ADMIN
+    // =========================================================================
+    public async createAdmin(model: RegisterDto): Promise<TokenData> {
+        if (isEmptyObj(model)) throw new httpException(400, 'Dữ liệu rỗng');
 
- public async updateUser(userID: string, model: RegisterDto) : Promise<IUser> {  
+        if (!model.email || !model.password) {
+            throw new httpException(400, 'Vui lòng nhập đầy đủ Email và Mật khẩu');
+        }
+
+        const user = await this.userSchema.findOne({ email: model.email });
+        if (user) throw new httpException(409, `Email ${model.email} đã tồn tại`);
+
+        const avatar = gravatar.url(model.email, { size: '200', rating: 'g', default: 'mm' });
+        const salt = await bcryptjs.genSalt(10);
         
-        //kiểm tra rỗng
-        if(isEmptyObj(model)){
-            throw new httpException(400,'lỗi đăng ký rỗng rồi cu');
+        // Fix TS: model.password!
+        const hashedPassword = await bcryptjs.hash(model.password!, salt);
+        
+        const userId = new mongoose.Types.ObjectId().toString();
+
+        const createAdmin: IUser = await this.userSchema.create({
+            userId,
+            email: model.email,
+            name: model.name,
+            password: hashedPassword,
+            avatar: avatar,
+            createdAt: Date.now(),
+            xpPoints: 0,
+            level: 1,
+            role: "admin", 
+        });
+
+        return this.createToken(createAdmin);
+    }
+
+    // =========================================================================
+    // PHẦN MỚI THÊM: LOGIN
+    // =========================================================================
+    public async login(loginData: RegisterDto): Promise<{ token: string, user: IUser }> {
+        if (isEmptyObj(loginData)) throw new httpException(400, 'Chưa nhập dữ liệu');
+
+        if (!loginData.email || !loginData.password) {
+            throw new httpException(400, 'Vui lòng nhập đầy đủ Email và Mật khẩu');
         }
 
-        //kiểm tra user tồn tại chưa
+        const user = await this.userSchema.findOne({ email: loginData.email });
+        if (!user) throw new httpException(409, `Email hoặc mật khẩu không đúng`);
+
+        // =================================================================
+        // FIX LỖI TẠI ĐÂY: Thêm dấu ! vào CẢ HAI BIẾN
+        // loginData.password!  VÀ  user.password!
+        // =================================================================
+        const isMatch = await bcryptjs.compare(loginData.password!, user.password!);
+        
+        if (!isMatch) throw new httpException(409, `Email hoặc mật khẩu không đúng`);
+
+        const tokenData = this.createToken(user);
+        
+        return { token: tokenData.token, user };
+    }
+    // =========================================================================
+
+
+    public async updateUser(userID: string, model: RegisterDto): Promise<IUser> {
+        if (isEmptyObj(model)) {
+            throw new httpException(400, 'Dữ liệu update rỗng');
+        }
+
         const user = await this.userSchema.findById(userID);
-        if(!user) {
-            throw new httpException(400, `không có user id cu`)
+        if (!user) {
+            throw new httpException(400, `Không tìm thấy User ID`)
         }
 
-        //kiểm tra trùng email
-           if (model.email && model.email !== user.email) {
-               const existingUser = await this.userSchema.findOne({ email: model.email }); //kiểm tra email mới có trùng với email nào trng db không
-
-            if(existingUser) {
-            throw new httpException(409, `Email ${model.email} đã tồn tại rồi cu`);
+        if (model.email && model.email !== user.email) {
+            const existingUser = await this.userSchema.findOne({ email: model.email });
+            if (existingUser) {
+                throw new httpException(409, `Email ${model.email} đã tồn tại`);
+            }
         }
-           } 
 
         let updateUserById;
 
-    const updateData: any = {
-           name: model.name, 
-    };
+        const updateData: any = {
+            name: model.name,
+        };
 
+        if (model.email && model.email !== user.email) {
+            updateData.email = model.email;
 
-    let avatar = user.avatar;
-     if (model.email && model.email !== user.email) {
-        updateData.email = model.email; 
+            if (!model.avatar) {
+                const newAvatar = gravatar.url(model.email, {
+                    size: '200',
+                    rating: 'g',
+                    default: 'mm'
+                });
+                updateData.avatar = newAvatar;
+            }
+        }
         
-        if (!model.avatar) {
-            const newAvatar = gravatar.url(model.email, {
-                size: '200',
-                rating: 'g',
-                default: 'mm'
-            });
-            updateData.avatar = newAvatar;
-        } 
-    }
-        //Tạo avatar mặc định dựa theo email
-      
-
         if (model.avatar) {
-        updateData.avatar = model.avatar;
-    }
+            updateData.avatar = model.avatar;
+        }
 
-        if(model.password) {
+        if (model.password) {
             const salt = await bcryptjs.genSalt(10);
-            const  hashedPassword = await bcryptjs.hash(model.password, salt);
-            updateData.password = hashedPassword;  
+            const hashedPassword = await bcryptjs.hash(model.password, salt);
+            updateData.password = hashedPassword;
         }
 
-       // Thực hiện update
-       updateUserById = await this.userSchema.findByIdAndUpdate(
-        userID, 
-        updateData,
-        { new: true } 
-    ).exec();
+        updateUserById = await this.userSchema.findByIdAndUpdate(
+            userID,
+            updateData,
+            { new: true }
+        ).exec();
 
-       if(!updateUserById) throw new httpException(404, 'cu không phải user');  
+        if (!updateUserById) throw new httpException(404, 'Update thất bại');
 
-       return updateUserById;
+        return updateUserById;
     }
 
 
-  public async getUserById(userId: string) : Promise<IUser> {  
-
-        //kiểm tra email tồn tại chưa
-        // const user = await  this.userSchema.findOne(userId: userId);
-        //vì t tạo thêm cái userID nên không dùng findbyId để tìm theo _id được
-        //  const user = await this.userSchema.findOne({ userId: userId });
-         const user = await this.userSchema.findById(userId);
-
-        if( !user) {
-            throw new httpException(404, `user không tồn tại nha cu`)
+    public async getUserById(userId: string): Promise<IUser> {
+        const user = await this.userSchema.findById(userId);
+        if (!user) {
+            throw new httpException(404, `User không tồn tại`)
         }
-       
         return user;
-    
     }
 
-  public async getAllUser() : Promise<IUser[]> {  
-
-        //kiểm tra email tồn tại chưa
-        // const user = await  this.userSchema.findOne(userId: userId);
-        //vì t tạo thêm cái userID nên không dùng findbyId để tìm theo _id được
-         const users = await this.userSchema.find();
-    
+    public async getAllUser(): Promise<IUser[]> {
+        const users = await this.userSchema.find();
         return users;
-    
     }
 
 
-       
-//   public async getAllUserPaging(keyword: string, page: number): Promise<IPagination<IUser>> {
-//     const pageSize: number = Number(process.env.PAGE_SIZE) || 10;
-//     const skip = (page - 1) * pageSize;
+    public async getAllUserPaging(keyword: string, page: number): Promise<IPagination<IUser>> {
+        const pageSize: number = Number(process.env.PAGE_SIZE) || 10;
+        const skip = (page - 1) * pageSize;
 
-//     // Tạo query cơ bản MỘT LẦN
-//     let baseQuery = this.userSchema.find();
+        let baseQuery = this.userSchema.find();
 
-//     if (keyword) {
-//         baseQuery = baseQuery.where('name', new RegExp(keyword, 'i'));  //không phân biệt hoa thượngf
-//     }
+        if (keyword) {
+            baseQuery = baseQuery.where('name', new RegExp(keyword, 'i'));
+        }
 
-//     // Dùng baseQuery cho cả hai mục đích
-//     const [users, total] = await Promise.all([
-//         baseQuery.clone().sort({ date: -1 }).skip(skip).limit(pageSize).exec(), //Lấy danh sách user
-//         baseQuery.countDocuments().exec() //Đếm tổng số kết quả
-//     ]);
+        const [users, total] = await Promise.all([
+            baseQuery.clone()
+                .sort({ createdAt: -1, _id: -1 })
+                .skip(skip)
+                .limit(pageSize)
+                .exec(),
+            baseQuery.countDocuments().exec()
+        ]);
 
-//     return {
-//         total: total,
-//         page: page,
-//         pageSize: pageSize,
-//         totalPages: Math.ceil(total / pageSize),
-//         items: users
-//     } as unknown as IPagination<IUser>;
-// }
-
-
-public async getAllUserPaging(keyword: string, page: number): Promise<IPagination<IUser>> {
-    const pageSize: number = Number(process.env.PAGE_SIZE) || 10;
-    const skip = (page - 1) * pageSize;
-
-   // console.log(` SEARCH: keyword="${keyword}", page=${page}, pageSize=${pageSize}, skip=${skip}`);
-
-    let baseQuery = this.userSchema.find();
-
-    if (keyword) {
-        baseQuery = baseQuery.where('name', new RegExp(keyword, 'i'));
-     //   console.log(`Applied filter: name contains "${keyword}"`);
+        return {
+            total: total,
+            page: page,
+            pageSize: pageSize,
+            totalPages: Math.ceil(total / pageSize),
+            items: users
+        } as unknown as IPagination<IUser>;
     }
 
-    const [users, total] = await Promise.all([
-        baseQuery.clone()
-            .sort({ createdAt: -1, _id: -1 })
-            .skip(skip)
-            .limit(pageSize)
-            .exec(),
-        baseQuery.countDocuments().exec()
-    ]);
 
-   // console.log(`RESULTS: total=${total}, found=${users.length} users`);
-  //  console.log(` Users found:`, users.map(user => ({ name: user.name, email: user.email })));
-
-    return {
-        total: total,
-        page: page,
-        pageSize: pageSize,
-        totalPages: Math.ceil(total / pageSize),
-        items: users
-    } as unknown as IPagination<IUser>;
-}
-
-
-public async deleteUser(userId: string) : Promise<IUser>{
-
-    const deleteUser = await this.userSchema.findByIdAndDelete(userId).exec();
-    if(!deleteUser) {
-        throw new httpException(409, "không tìm thấy người dùng")
+    public async deleteUser(userId: string): Promise<IUser> {
+        const deleteUser = await this.userSchema.findByIdAndDelete(userId).exec();
+        if (!deleteUser) {
+            throw new httpException(409, "Không tìm thấy người dùng để xóa")
+        }
+        return deleteUser;
     }
-    return deleteUser;
-}
 
 
-//thêm  điểm kinh nghiệm (XP)
-public async addXP(userId: string, xp: number) : Promise<IUser> {
-    const user = await this.userSchema.findById(userId);
+    public async addXP(userId: string, xp: number): Promise<IUser> {
+        const user = await this.userSchema.findById(userId);
 
-     if (!user) throw new httpException(404, 'User not found');
+        if (!user) throw new httpException(404, 'User not found');
 
-      // Thêm XP
-      user.xpPoints += xp;
+        user.xpPoints += xp;
 
-      //tăng level
-      const newLevel = Math.floor(user.xpPoints / 100 + 1);
-      if(newLevel > user.level ) {
-        user.level = newLevel;
-        // thêm logic thông báo lên level (làm sau)*****************
-      }
+        const newLevel = Math.floor(user.xpPoints / 100 + 1);
+        if (newLevel > user.level) {
+            user.level = newLevel;
+        }
 
-      return await user.save();
-}
+        return await user.save();
+    }
 
-//theo dõi trang thái level, điểm
-public async getUserProgress(userId: string ) :Promise<{xpPoints: number, level: number, xpToNextLevel: number}> {
+    public async getUserProgress(userId: string): Promise<{ xpPoints: number, level: number, xpToNextLevel: number }> {
+        const user = await this.userSchema.findById(userId);
+        if (!user) throw new httpException(404, 'User not found');
 
-     const user = await this.userSchema.findById(userId);
-     if (!user) throw new httpException(404, 'User not found');
+        return {
+            xpPoints: user.xpPoints,
+            level: user.level,
+            xpToNextLevel: (user.level * 100) - user.xpPoints
+        };
+    }
 
-
-       return {
-      xpPoints: user.xpPoints,
-      level: user.level,
-      xpToNextLevel: (user.level * 100) - user.xpPoints // XP cần để lên level tiếp theo
-    };
-}
-
-
-
-
-
-private createToken(user: IUser): TokenData {
-    const dataInToken: DataStoredInToken = {id: user.userId};
-    const secret: string = process.env.JWT_TOKEN_SECRET!;
-    const expiresIn: number = 259200;
-    return {
-         token: jwt.sign(dataInToken,secret, {expiresIn:expiresIn}),
+    private createToken(user: IUser): TokenData {
+        const dataInToken: DataStoredInToken = { id: user.userId };
+        const secret: string = process.env.JWT_TOKEN_SECRET!;
+        const expiresIn: number = 86400; // 24h
+        return {
+            token: jwt.sign(dataInToken, secret, { expiresIn: expiresIn }),
+        }
     }
 }
-
-
-// private createToken(user: IUser): TokenData {
-//     try {
-//         console.log('Creating token for user:', user.userId);
-        
-//         // ✅ FIX 1: Kiểm tra JWT secret
-//         const secret = process.env.JWT_TOKEN_SECRET;
-//         if (!secret) {
-//             console.error('JWT_TOKEN_SECRET is not defined in environment variables');
-//             throw new httpException(500, 'Server configuration error');
-//         }
-
-//         const dataInToken: DataStoredInToken = { id: user.userId };
-        
-//         // ✅ FIX 2: Thời gian hết hạn hợp lý (60 giây = 60, 1 giờ = 3600)
-//         const expiresIn: number = 60 * 60; // 1 giờ
-        
-//         console.log('JWT Secret exists:', !!secret);
-//         console.log('Expires in:', expiresIn);
-        
-//         const token = jwt.sign(dataInToken, secret, { expiresIn });
-//         console.log('Token created successfully');
-        
-//         // ✅ FIX 3: Trả về đúng structure
-//         return {
-//             token: token,
-//             expiresIn: expiresIn // Thêm field này
-//         };
-        
-//     } catch (error) {
-//         console.error('Token creation error:', error);
-//         throw new httpException(500, 'Failed to create authentication token');
-//     }
-// }
-
- }
- export default UserService;    
+export default UserService;
