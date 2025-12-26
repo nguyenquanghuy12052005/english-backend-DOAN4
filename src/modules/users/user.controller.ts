@@ -2,10 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import UserService from "./user.service";
 import RegisterDto from "./dtos/register.dtos";
 import { TokenData } from "../auth";
+import SendFriendRequestDto from "./dtos/sendFriendRequest.dto";
 
 export default class UsersController {
     private userService = new UserService();
-    
+
     public register = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const model: RegisterDto = req.body;
@@ -16,9 +17,6 @@ export default class UsersController {
         }
     }
 
-    // =========================================================================
-    // PHẦN MỚI THÊM: REGISTER ADMIN
-    // =========================================================================
     public registerAdmin = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const model: RegisterDto = req.body;
@@ -29,15 +27,11 @@ export default class UsersController {
         }
     }
 
-    // =========================================================================
-    // PHẦN MỚI THÊM: LOGIN
-    // =========================================================================
     public login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const model: RegisterDto = req.body;
             const result = await this.userService.login(model);
-            // Trả về { token: "...", user: { role: "admin", ... } }
-            res.status(200).json(result); 
+            res.status(200).json(result);
         } catch (error) {
             next(error);
         }
@@ -75,11 +69,8 @@ export default class UsersController {
 
     public getAllUserPaging = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            // const keyword: string = req.params.keyword;
             const keyword: string = (req.query.keyword as string) || '';
-            // const page: number = Number(req.params.page);
-            const page: number = Number(req.query.page);
-            //  console.log("keyword:", keyword, " | page:", page);
+            const page: number = Number(req.query.page) || 1;
             const pagination = await this.userService.getAllUserPaging(keyword, page);
             res.status(200).json(pagination);
         } catch (error) {
@@ -87,12 +78,10 @@ export default class UsersController {
         }
     }
 
-
     public deleteUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            // const keyword: string = req.params.keyword      
-            const resultr = await this.userService.deleteUser(req.params.id)
-            res.status(200).json(resultr);
+            const result = await this.userService.deleteUser(req.params.id)
+            res.status(200).json(result);
         } catch (error) {
             next(error);
         }
@@ -102,7 +91,6 @@ export default class UsersController {
         try {
             const userId: string = req.params.id;
             const xp: number = Number(req.body.xp)
-
             const user = await this.userService.addXP(userId, xp);
             res.status(200).json(user);
         } catch (error) {
@@ -115,6 +103,85 @@ export default class UsersController {
             const userId: string = req.params.id;
             const progress = await this.userService.getUserProgress(userId);
             res.status(200).json(progress);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // =========================================================================
+    // FRIEND REQUEST CONTROLLERS (Các hàm bị thiếu gây lỗi đỏ)
+    // =========================================================================
+
+    public sendFriendRequest = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const senderId = req.user.id; 
+            const dto: SendFriendRequestDto = req.body; 
+            const request = await this.userService.sendFriendRequest(senderId, dto.receiverId);
+            res.status(201).json(request);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public acceptFriendRequest = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const requestId = req.params.requestId;          
+            const user = await this.userService.acceptFriendRequest(requestId, userId);
+            res.status(200).json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public rejectFriendRequest = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const requestId = req.params.requestId;
+            await this.userService.rejectFriendRequest(requestId, userId);
+            res.status(200).json({ message: "Đã từ chối yêu cầu kết bạn" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public cancelFriendRequest = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const requestId = req.params.requestId;
+            await this.userService.cancelFriendRequest(requestId, userId);
+            res.status(200).json({ message: "Đã hủy yêu cầu kết bạn" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public removeFriend = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const friendId = req.params.friendId;
+            const user = await this.userService.removeFriend(userId, friendId);
+            res.status(200).json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public getPendingRequests = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const requests = await this.userService.getPendingRequests(userId);
+            res.status(200).json(requests);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public getFriends = async (req: any, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const friends = await this.userService.getFriends(userId);
+            res.status(200).json(friends);
         } catch (error) {
             next(error);
         }

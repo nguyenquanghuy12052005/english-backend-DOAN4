@@ -14,6 +14,9 @@ const UserSchema = new mongoose.Schema(
     level: { type: Number, default: 1 },
     createdAt: { type: Date, default: Date.now },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    friends: [{ type: String }], 
+    pendingRequests: [{ type: String }],
+    sentRequests: [{ type: String }], 
   },
   {
     collection: "users", 

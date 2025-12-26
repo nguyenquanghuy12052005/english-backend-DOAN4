@@ -15,64 +15,63 @@ class QuizService {
     /**
      * CORE FUNCTION: CHUẨN HÓA DỮ LIỆU
      */
- private normalizeToModelStructure(quizDto: CreateQuizDto): any[] {
-    const inputData = quizDto as any;
-    let finalQuestions: any[] = [];
+    private normalizeToModelStructure(quizDto: CreateQuizDto): any[] {
+        const inputData = quizDto as any;
+        let finalQuestions: any[] = [];
 
-    // --- BƯỚC 1: Xử lý Câu hỏi lẻ (Part 1, 2, 3, 4, 5) ---
-    if (inputData.questions && Array.isArray(inputData.questions)) {
-        const processedSimpleQuestions = inputData.questions.map((q: any) => {
-            let qText: string[] = [];
-            if (Array.isArray(q.questionText)) {
-                qText = q.questionText;
-            } else if (typeof q.questionText === 'string') {
-                qText = [q.questionText];
-            } else {
-                qText = ["No Question Content"];
-            }
+        // --- BƯỚC 1: Xử lý Câu hỏi lẻ (Part 1, 2, 3, 4, 5) ---
+        if (inputData.questions && Array.isArray(inputData.questions)) {
+            const processedSimpleQuestions = inputData.questions.map((q: any) => {
+                let qText: string[] = [];
+                if (Array.isArray(q.questionText)) {
+                    qText = q.questionText;
+                } else if (typeof q.questionText === 'string') {
+                    qText = [q.questionText];
+                } else {
+                    qText = ["No Question Content"];
+                }
 
-            return {
-                questionText: qText,
-                questionImage: q.questionImage || "",
-                // ✅ FIX: Giữ nguyên questionAudio từ payload, không tự set ""
-                questionAudio: q.questionAudio !== undefined ? q.questionAudio : "",
-                options: q.options,
-                correctAnswer: q.correctAnswer,
-                explanation: q.explanation || "",
-                point: q.point || 1
-            };
-        });
-        finalQuestions = [...finalQuestions, ...processedSimpleQuestions];
-    }
+                return {
+                    questionText: qText,
+                    questionImage: q.questionImage || "",
+                    questionAudio: q.questionAudio || "",
+                    options: q.options,
+                    correctAnswer: q.correctAnswer,
+                    explanation: q.explanation || "",
+                    point: q.point || 1
+                };
+            });
+            finalQuestions = [...finalQuestions, ...processedSimpleQuestions];
+        }
 
-    // --- BƯỚC 2: Xử lý Câu hỏi chùm (Part 6, 7 - trường 'data') ---
-    if (inputData.data && Array.isArray(inputData.data)) {
-        for (const group of inputData.data) {
-            let passages: string[] = [];
-            if (Array.isArray(group.passageText)) {
-                passages = group.passageText;
-            } else if (typeof group.passageText === 'string') {
-                passages = [group.passageText];
-            }
+        // --- BƯỚC 2: Xử lý Câu hỏi chùm (Part 6, 7 - trường 'data') ---
+        if (inputData.data && Array.isArray(inputData.data)) {
+            for (const group of inputData.data) {
+                let passages: string[] = [];
+                if (Array.isArray(group.passageText)) {
+                    passages = group.passageText;
+                } else if (typeof group.passageText === 'string') {
+                    passages = [group.passageText];
+                }
 
-            if (group.questions && Array.isArray(group.questions)) {
-                for (const q of group.questions) {
-                    const qContent = q.description || q.questionText || `Question ${q.number}`;
-                    finalQuestions.push({
-                        questionText: [...passages, qContent], 
-                        questionImage: "",
-                        questionAudio: "", // Part 6, 7 không có audio
-                        options: q.options,
-                        correctAnswer: q.correctAnswer,
-                        explanation: q.explanation || "",
-                        point: q.point || 1
-                    });
+                if (group.questions && Array.isArray(group.questions)) {
+                    for (const q of group.questions) {
+                        const qContent = q.description || q.questionText || `Question ${q.number}`;
+                        finalQuestions.push({
+                            questionText: [...passages, qContent], 
+                            questionImage: "",
+                            questionAudio: "",
+                            options: q.options,
+                            correctAnswer: q.correctAnswer,
+                            explanation: q.explanation || "",
+                            point: q.point || 1
+                        });
+                    }
                 }
             }
         }
+        return finalQuestions;
     }
-    return finalQuestions;
-}
 
     // =========================================================================
     // CREATE QUIZ

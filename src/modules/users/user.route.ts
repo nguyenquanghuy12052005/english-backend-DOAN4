@@ -1,15 +1,13 @@
 import { Router } from "express";
 import { Route } from "../../core/interface";
 import UsersController from "./user.controller";
-
 import RegisterDto from "./dtos/register.dtos";
 import { adminMiddleware, authMiddleware, validationMiddleware } from "../../core/middleware";
-
+import SendFriendRequestDto from "./dtos/sendFriendRequest.dto";
 
 export default class UserRoute implements Route {
     public path = "/api/users";
     public router = Router();
-
     public usersController = new UsersController();
 
     constructor() {
@@ -18,50 +16,117 @@ export default class UserRoute implements Route {
 
     private initializeRoutes() {
         // ==================================================================
-        // 1. AUTH ROUTES (Đăng ký, Đăng nhập, Admin) - ĐẶT LÊN ĐẦU
+        // 1. AUTH & STATIC ROUTES (Đăng ký, Đăng nhập, Danh sách tĩnh)
+        // ==================================================================
+        
+        // Đăng ký User: POST /api/users
+        this.router.post(
+            this.path, 
+            validationMiddleware(RegisterDto, true), 
+            this.usersController.register
+        );
+
+        // Đăng ký Admin: POST /api/users/admin/register
+        this.router.post(
+            `${this.path}/admin/register`, 
+            validationMiddleware(RegisterDto, true), 
+            this.usersController.registerAdmin
+        );
+
+        // Đăng nhập: POST /api/users/login
+        this.router.post(`${this.path}/login`, this.usersController.login);
+
+        // Lấy danh sách bạn bè: GET /api/users/my-friends
+        this.router.get(
+            `${this.path}/my-friends`, 
+            authMiddleware, 
+            this.usersController.getFriends
+        );
+
+        // Lấy danh sách yêu cầu chờ: GET /api/users/friend-requests/pending
+        this.router.get(
+            `${this.path}/friend-requests/pending`, 
+            authMiddleware, 
+            this.usersController.getPendingRequests
+        );
+
+        // ==================================================================
+        // 2. FEATURE ROUTES (Phân trang & Gửi yêu cầu)
         // ==================================================================
 
-        // Đăng ký User thường: POST http://localhost:5000/api/users
-        this.router.post(this.path, validationMiddleware(RegisterDto, true), this.usersController.register);
+        // Phân trang: GET /api/users/paging
+        this.router.get(`${this.path}/paging`, this.usersController.getAllUserPaging);
 
-        // Đăng ký Admin (MỚI): POST http://localhost:5000/api/users/admin/register
-        // Dùng validation giống register thường
-        this.router.post(this.path + '/admin/register', validationMiddleware(RegisterDto, true), this.usersController.registerAdmin);
-
-        // Đăng nhập (MỚI): POST http://localhost:5000/api/users/login
-        this.router.post(this.path + '/login', this.usersController.login);
-
-
-        // ==================================================================
-        // 2. FEATURE ROUTES (Paging, Progress) - ĐẶT TRƯỚC ID
-        // ==================================================================
-
-        // Paging: http://localhost:5000/api/users/paging?page=1&keyword=huy
-        // Lưu ý: Route này PHẢI nằm trên route /:id
-        this.router.get(this.path + '/paging', this.usersController.getAllUserPaging);
-
-        // Lấy tất cả user
+        // Lấy tất cả user: GET /api/users
         this.router.get(this.path, this.usersController.getAllUser);
 
+        // Gửi yêu cầu kết bạn: POST /api/users/friend-request
+        this.router.post(
+            `${this.path}/friend-request`, 
+            authMiddleware, 
+            validationMiddleware(SendFriendRequestDto, true), 
+            this.usersController.sendFriendRequest
+        );
 
         // ==================================================================
-        // 3. PARAM ROUTES (Các route có /:id) - ĐẶT CUỐI CÙNG
+        // 3. FRIEND ACTION ROUTES (Chấp nhận, Từ chối, Hủy)
+        // ==================================================================
+
+        // Chấp nhận kết bạn
+        this.router.post(
+            `${this.path}/friend-request/:requestId/accept`, 
+            authMiddleware, 
+            this.usersController.acceptFriendRequest
+        );
+
+        // Từ chối kết bạn
+        this.router.post(
+            `${this.path}/friend-request/:requestId/reject`, 
+            authMiddleware, 
+            this.usersController.rejectFriendRequest
+        );
+
+        // Hủy yêu cầu đã gửi (Route DELETE này sẽ khớp với hàm cancelFriendRequest)
+        this.router.delete(
+            `${this.path}/friend-request/:requestId`, 
+            authMiddleware, 
+            this.usersController.cancelFriendRequest
+        );
+
+        // Xóa bạn bè
+        this.router.delete(
+            `${this.path}/friends/:friendId`, 
+            authMiddleware, 
+            this.usersController.removeFriend
+        );
+
+        // ==================================================================
+        // 4. PARAM ROUTES (Các route có /:id đặt CUỐI CÙNG để tránh ghi đè)
         // ==================================================================
 
         // Lấy user theo ID
-        this.router.get(this.path + '/:id', this.usersController.getUserById);
+        this.router.get(`${this.path}/:id`, this.usersController.getUserById);
 
-        // Update User
-        this.router.put(this.path + '/:id', authMiddleware, validationMiddleware(RegisterDto, true), this.usersController.updateUser);
+        // Cập nhật User
+        this.router.put(
+            `${this.path}/:id`, 
+            authMiddleware, 
+            validationMiddleware(RegisterDto, true), 
+            this.usersController.updateUser
+        );
 
-        // Delete User (Cần quyền Admin)
-        this.router.delete(this.path + '/:id', authMiddleware, adminMiddleware, this.usersController.deleteUser);
+        // Xóa User (Admin)
+        this.router.delete(
+            `${this.path}/:id`, 
+            authMiddleware, 
+            adminMiddleware, 
+            this.usersController.deleteUser
+        );
 
-        // Thêm XP cho user
-        this.router.post(this.path + '/:id/xp', authMiddleware, this.usersController.addXP);
+        // Thêm XP
+        this.router.post(`${this.path}/:id/xp`, authMiddleware, this.usersController.addXP);
 
-        // Lấy tiến trình học tập
-        this.router.get(this.path + '/:id/progress', authMiddleware, this.usersController.getUserProgress);
-
+        // Lấy tiến trình
+        this.router.get(`${this.path}/:id/progress`, authMiddleware, this.usersController.getUserProgress);
     }
 }
