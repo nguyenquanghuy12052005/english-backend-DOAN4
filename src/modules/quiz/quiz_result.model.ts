@@ -1,4 +1,3 @@
-// quiz_result.model.ts
 import mongoose from "mongoose";
 import { IQuizResult } from "./quiz.interface";
 

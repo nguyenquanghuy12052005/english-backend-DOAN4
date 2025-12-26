@@ -1,4 +1,3 @@
-// create_quiz_dto.ts
 import { IsString, IsNotEmpty, IsNumber, IsEnum, IsArray, ValidateNested, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -7,23 +6,22 @@ export class OptionDto {
     @IsNotEmpty()
     text!: string;
 
-    @IsString()
     @IsOptional()
+    @IsString()
     image?: string;
 }
 
 export class QuestionDto {
-    @IsArray()
-    @IsString({ each: true }) 
-    @IsNotEmpty({ each: true })
-    questionText!: string[];
-
-    @IsString()
     @IsOptional()
+    // Chấp nhận input là String hoặc Mảng String (để linh hoạt)
+    questionText?: string | string[]; 
+
+    @IsOptional()
+    @IsString()
     questionImage?: string;
 
-    @IsString()
     @IsOptional()
+    @IsString()
     questionAudio?: string;
 
     @IsArray()
@@ -35,13 +33,35 @@ export class QuestionDto {
     @IsNotEmpty()
     correctAnswer!: string;
 
-    @IsString()
     @IsOptional()
+    @IsString()
     explanation?: string;
 
     @IsNumber()
     @IsNotEmpty()
     point!: number;
+
+    // Các trường phụ để hỗ trợ map dữ liệu từ Part 6,7
+    @IsOptional()
+    description?: string;
+    
+    @IsOptional()
+    number?: number;
+}
+
+// Class hỗ trợ cấu trúc nhóm của Part 6, 7
+export class GroupedQuestionDto {
+    @IsOptional()
+    @IsString()
+    groupTitle?: string;
+
+    @IsOptional()
+    passageText?: string | string[];
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => QuestionDto)
+    questions!: QuestionDto[];
 }
 
 export default class CreateQuizDto {
@@ -49,12 +69,21 @@ export default class CreateQuizDto {
     @IsNotEmpty()
     title!: string;
 
-    @IsString()
     @IsOptional()
+    @IsString()
     description?: string;
 
-    @IsEnum([1, 2, 3, 4, 5, 6, 7])
-    part!: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+    // --- QUAN TRỌNG: ĐÃ THÊM TRƯỜNG AUDIO ---
+    // Đây là trường bắt buộc để lưu link file nghe chung của bài thi
+    @IsOptional()
+    @IsString()
+    audio?: string;
+    // ----------------------------------------
+
+    // Mình đổi thành IsNumber để linh hoạt (nhận cả 0 cho FullTest và 1-7 cho Part)
+    @IsNumber()
+    @IsNotEmpty()
+    part!: number;
 
     @IsEnum(["Easy", "Medium", "Hard"])
     level!: "Easy" | "Medium" | "Hard";
@@ -63,8 +92,17 @@ export default class CreateQuizDto {
     @IsNotEmpty()
     timeLimit!: number;
 
+    // Dành cho Part 1-5 (Câu lẻ)
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => QuestionDto)
-    questions!: QuestionDto[];
+    questions?: QuestionDto[];
+
+    // Dành cho Part 6-7 (Câu chùm)
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => GroupedQuestionDto)
+    data?: GroupedQuestionDto[]; 
 }

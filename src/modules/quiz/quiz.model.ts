@@ -1,14 +1,13 @@
-// quiz.model.ts
 import mongoose from "mongoose";
-import { IQuiz } from "./quiz.interface";
+import { IQuiz } from "./quiz.interface"; 
 
 const OptionSchema = new mongoose.Schema({
     text: { type: String, required: true },
     image: { type: String }
-});
+}, { _id: false }); // Thêm _id: false để đỡ sinh id rác cho option
 
 const QuestionSchema = new mongoose.Schema({
-    questionText: {   type: [String], required: true },
+    questionText: { type: [String], required: true },
     questionImage: String,
     questionAudio: String,
     options: { type: [OptionSchema], required: true },
@@ -21,11 +20,23 @@ const QuizSchema = new mongoose.Schema<IQuiz>(
     {
         title: { type: String, required: true },
         description: String,
+        
+        // --- QUAN TRỌNG: PHẢI THÊM DÒNG NÀY ---
+        audio: { type: String, default: "" }, 
+        // -------------------------------------
+
         part: {
             type: Number,
-            required: true,
-            enum: [1, 2, 3, 4, 5, 6, 7]
+            required: false, 
+            default: 0      
         },
+        
+        type: {
+            type: String,
+            enum: ['FULL_TEST', 'PART_TEST', 'MINI_TEST'], 
+            default: 'PART_TEST'
+        },
+
         level: {
             type: String,
             required: true,
@@ -38,15 +49,25 @@ const QuizSchema = new mongoose.Schema<IQuiz>(
         maxScore: { type: Number, default: 0 }
     },
     {
-        timestamps: true,       // auto tạo createdAt + updatedAt
+        timestamps: true,
         collection: "quizzes"
     }
 );
 
 // Auto tính totalQuestions & maxScore
 QuizSchema.pre("save", function (next) {
-    this.totalQuestions = this.questions.length;
-    this.maxScore = this.questions.reduce((sum, q) => sum + q.point, 0);
+    const quiz = this as any; 
+
+    if (quiz.questions && Array.isArray(quiz.questions)) {
+        quiz.totalQuestions = quiz.questions.length;
+        quiz.maxScore = quiz.questions.reduce((sum: number, q: any) => {
+            return sum + (q.point || 0);
+        }, 0);
+    } else {
+        quiz.totalQuestions = 0;
+        quiz.maxScore = 0;
+    }
+
     next();
 });
 
