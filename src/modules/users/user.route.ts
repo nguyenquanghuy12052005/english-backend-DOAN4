@@ -4,6 +4,7 @@ import UsersController from "./user.controller";
 
 import RegisterDto from "./dtos/register.dtos";
 import { adminMiddleware, authMiddleware, validationMiddleware } from "../../core/middleware";
+import SendFriendRequestDto from "./dtos/sendFriendRequest.dto";
 
 
 export default class UserRoute implements Route{
@@ -18,6 +19,7 @@ export default class UserRoute implements Route{
 
     private initializeRoutes() {
         // post data lên http://localhost:5000/api/users
+                this.router.get(this.path + '/my-friends', authMiddleware, this.usersController.getFriends);
  
         this.router.post(this.path, validationMiddleware(RegisterDto, true), this.usersController.register); 
 
@@ -44,6 +46,18 @@ export default class UserRoute implements Route{
   
   // Lấy tiến trình học tập
   this.router.get(this.path + '/:id/progress', authMiddleware, this.usersController.getUserProgress);
+
+
+
+
+        this.router.post(this.path + '/friend-request', authMiddleware, validationMiddleware(SendFriendRequestDto, true), this.usersController.sendFriendRequest);
+
+        this.router.post(this.path + '/friend-request/:requestId/accept', authMiddleware, this.usersController.acceptFriendRequest);
+        this.router.post(this.path + '/friend-request/:requestId/reject', authMiddleware, this.usersController.rejectFriendRequest);
+        this.router.delete(this.path + '/friend-request/:requestId', authMiddleware, this.usersController.cancelFriendRequest);
+        this.router.delete(this.path + '/friends/:friendId', authMiddleware, this.usersController.removeFriend);
+        this.router.get(this.path + '/friend-requests/pending', authMiddleware, this.usersController.getPendingRequests);
+     
       
     }
 } 

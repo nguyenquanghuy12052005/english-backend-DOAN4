@@ -5,15 +5,17 @@ import { isEmptyObj } from '../../core/utils';
 import { DataStoredInToken, TokenData } from '../auth';
 import RegisterDto from './dtos/register.dtos';
 import UserSchema from './user.model';
+import  FriendRequestSchema  from './friendRequest.model';
 import gravatar from 'gravatar';
 import bcryptjs from 'bcryptjs';
 // import IUser from './user.interface';
-import { IUser } from './user.interface';
+import { IFriendRequest, IUser } from './user.interface';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { IPagination } from '../../core/interface';
  class UserService {
     public userSchema = UserSchema;
+    public friendRequestSchema = FriendRequestSchema;
 
     public async createUser( model: RegisterDto) : Promise<TokenData> {  
         
@@ -239,7 +241,7 @@ public async addXP(userId: string, xp: number) : Promise<IUser> {
       user.xpPoints += xp;
 
       //tăng level
-      const newLevel = Math.floor(user.xpPoints / 100 + 1);
+      const newLevel = Math.floor(user.xpPoints / 10 + 1);
       if(newLevel > user.level ) {
         user.level = newLevel;
         // thêm logic thông báo lên level (làm sau)*****************
@@ -258,12 +260,227 @@ public async getUserProgress(userId: string ) :Promise<{xpPoints: number, level:
        return {
       xpPoints: user.xpPoints,
       level: user.level,
-      xpToNextLevel: (user.level * 100) - user.xpPoints // XP cần để lên level tiếp theo
+      xpToNextLevel: (user.level * 10) - user.xpPoints // XP cần để lên level tiếp theo
     };
 }
 
+// Gửi yêu cầu kết bạn
+ public async sendFriendRequest(senderId: string, receiverId: string): Promise<IFriendRequest> {
+    // Kiểm tra xem có phải tự gửi cho mình không
+    if (senderId === receiverId) {
+        throw new httpException(400, "Bạn không thể gửi yêu cầu kết bạn cho chính mình");
+    }
 
+    // Tìm receiver bằng userId (vì receiverId từ body là userId)
+    const receiver = await this.userSchema.findOne({ userId: receiverId });
+    if (!receiver) {
+        throw new httpException(404, "Người dùng không tồn tại");
+    }
 
+    // Tìm sender bằng userId (vì senderId từ token là userId)
+    const senderUser = await this.userSchema.findOne({ userId: senderId });
+    if (!senderUser) {
+        throw new httpException(404, "Sender not found");
+    }
+
+    // Kiểm tra xem đã là bạn bè chưa
+if (senderUser?.friends?.some(friendId => friendId.toString() === receiver._id?.toString())) {
+    throw new httpException(400, "Đã là bạn bè");
+}
+
+    // Kiểm tra xem đã có request chưa
+    const existingRequest = await this.friendRequestSchema.findOne({
+        $or: [
+            { senderId: senderId, receiverId: receiverId }, //
+            { senderId: receiverId, receiverId: senderId }
+        ]
+    });
+
+    if (existingRequest) {
+        if (existingRequest.status === 'pending') {
+            throw new httpException(400, "Đã gửi yêu cầu kết bạn trước đó");
+        }
+        if (existingRequest.status === 'accepted') {
+            throw new httpException(400, "Đã là bạn bè");
+        }
+    }
+
+    // ⭐ Lưu userId vào FriendRequest
+    const friendRequest = await this.friendRequestSchema.create({
+        senderId: senderId,      // userId của người gửi
+        receiverId: receiverId,  // userId của người nhận
+        status: 'pending'
+    });
+
+    // Cập nhật danh sách request của người dùng (dùng _id để update)
+    await this.userSchema.findByIdAndUpdate(senderUser._id, {
+        $addToSet: { sentRequests: receiver._id }
+    });
+
+    await this.userSchema.findByIdAndUpdate(receiver._id, {
+        $addToSet: { pendingRequests: senderUser._id }
+    });
+
+    return friendRequest;
+}
+
+  // Chấp nhận yêu cầu kết bạn
+public async acceptFriendRequest(requestId: string, userId: string): Promise<IUser> {
+    const request = await this.friendRequestSchema.findById(requestId);
+    
+    if (!request) {
+        throw new httpException(404, "Yêu cầu kết bạn không tồn tại");
+    }
+
+    // So sánh userId với userId
+    if (request.receiverId !== userId) {
+        throw new httpException(403, "Bạn không có quyền chấp nhận yêu cầu này");
+    }
+
+    if (request.status !== 'pending') {
+        throw new httpException(400, "Yêu cầu kết bạn không còn hiệu lực");
+    }
+
+    // Cập nhật trạng thái request
+    request.status = 'accepted';
+    request.updatedAt = new Date();
+    await request.save();
+
+    // ⭐ TÌM USER BẰNG userId ĐỂ LẤY _id
+    const receiverUser = await this.userSchema.findOne({ userId: request.receiverId });
+    const senderUser = await this.userSchema.findOne({ userId: request.senderId });
+
+    if (!receiverUser || !senderUser) {
+        throw new httpException(404, "User not found");
+    }
+
+    // ⭐ THÊM userId VÀO MẢNG FRIENDS
+    await this.userSchema.findByIdAndUpdate(senderUser._id, {
+        $addToSet: { 
+            friends: request.receiverId  // ⭐ Lưu userId của receiver
+        },
+        $pull: { 
+            sentRequests: receiverUser._id  // ⭐ Xóa _id của receiver
+        }
+    });
+
+    await this.userSchema.findByIdAndUpdate(receiverUser._id, {
+        $addToSet: { 
+            friends: request.senderId  // ⭐ Lưu userId của sender
+        },
+        $pull: { 
+            pendingRequests: senderUser._id  // ⭐ Xóa _id của sender
+        }
+    });
+
+    return receiverUser;
+}
+
+  // Từ chối yêu cầu kết bạn
+  public async rejectFriendRequest(requestId: string, userId: string): Promise<void> {
+    const request = await this.friendRequestSchema.findById(requestId);
+    
+    if (!request) {
+      throw new httpException(404, "Yêu cầu kết bạn không tồn tại");
+    }
+
+    if (request.receiverId !== userId) {
+      throw new httpException(403, "Bạn không có quyền từ chối yêu cầu này");
+    }
+
+    // Cập nhật trạng thái request
+    request.status = 'rejected';
+    request.updatedAt = new Date();
+    await request.save();
+
+    // Xóa khỏi danh sách pending
+    await this.userSchema.findByIdAndUpdate(request.receiverId, {
+      $pull: { pendingRequests: request.senderId }
+    });
+
+    await this.userSchema.findByIdAndUpdate(request.senderId, {
+      $pull: { sentRequests: request.receiverId }
+    });
+  }
+
+  // Hủy yêu cầu kết bạn
+  public async cancelFriendRequest(requestId: string, userId: string): Promise<void> {
+    const request = await this.friendRequestSchema.findById(requestId);
+    
+    if (!request) {
+      throw new httpException(404, "Yêu cầu kết bạn không tồn tại");
+    }
+
+    if (request.senderId !== userId) {
+      throw new httpException(403, "Bạn không có quyền hủy yêu cầu này");
+    }
+
+    await this.friendRequestSchema.findByIdAndDelete(requestId);
+
+    // Xóa khỏi danh sách pending
+    await this.userSchema.findByIdAndUpdate(request.receiverId, {
+      $pull: { pendingRequests: request.senderId }
+    });
+
+    await this.userSchema.findByIdAndUpdate(request.senderId, {
+      $pull: { sentRequests: request.receiverId }
+    });
+  }
+
+  // Xóa bạn bè
+  public async removeFriend(userId: string, friendId: string): Promise<IUser | null> {
+    // Kiểm tra xem có phải bạn bè không
+    const user = await this.userSchema.findById(userId);
+    if (!user?.friends?.includes(friendId)) {
+      throw new httpException(400, "Người này không phải là bạn bè");
+    }
+
+    // Xóa khỏi danh sách bạn bè của cả hai
+    await this.userSchema.findByIdAndUpdate(userId, {
+      $pull: { friends: friendId }
+    });
+
+    await this.userSchema.findByIdAndUpdate(friendId, {
+      $pull: { friends: userId }
+    });
+
+    // Xóa hoặc cập nhật friend request tương ứng
+    await this.friendRequestSchema.findOneAndDelete({
+      $or: [
+        { senderId: userId, receiverId: friendId },
+        { senderId: friendId, receiverId: userId }
+      ],
+      status: 'accepted'
+    });
+
+    return await this.userSchema.findById(userId);
+  }
+
+  // Lấy danh sách yêu cầu kết bạn đang chờ
+  public async getPendingRequests(userId: string): Promise<IFriendRequest[]> {
+      const user = await this.userSchema.findById(userId);
+    return await this.friendRequestSchema.find({
+      receiverId: userId,
+      status: 'pending'
+    }).sort({ createdAt: -1 });
+  }
+
+  // Lấy danh sách bạn bè
+public async getFriends(userId: string): Promise<IUser[]> {
+    
+    const user = await this.userSchema.findOne({ userId: userId });
+    
+    if (!user || !user.friends || user.friends.length === 0) {
+        return [];
+    }
+    
+   
+    const friends = await this.userSchema.find({
+        userId: { $in: user.friends } 
+    }).select('_id userId name avatar');
+    
+    return friends;
+}
 
 
 private createToken(user: IUser): TokenData {

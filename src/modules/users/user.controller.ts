@@ -3,6 +3,7 @@ import UserService from "./user.service";
 import RegisterDto from "./dtos/register.dtos";
 
 import { TokenData } from "../auth";
+import SendFriendRequestDto from "./dtos/sendFriendRequest.dto";
 
 export default class UsersController {
     private userService = new UserService();
@@ -93,4 +94,98 @@ export default class UsersController {
       next(error);
     }
   }
+
+
+
+
+
+
+
+
+  // Gửi yêu cầu kết bạn
+    public sendFriendRequest = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const senderId = req.user.id; 
+            const dto: SendFriendRequestDto = req.body; 
+            const request = await this.userService.sendFriendRequest(senderId, dto.receiverId);
+            res.status(201).json(request);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Chấp nhận yêu cầu kết bạn
+    public acceptFriendRequest = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const requestId = req.params.requestId;          
+            const user = await this.userService.acceptFriendRequest(requestId, userId);
+            res.status(200).json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Từ chối yêu cầu kết bạn
+    public rejectFriendRequest = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const requestId = req.params.requestId;
+            
+            await this.userService.rejectFriendRequest(requestId, userId);
+            res.status(200).json({ message: "Đã từ chối yêu cầu kết bạn" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Hủy yêu cầu kết bạn
+    public cancelFriendRequest = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const requestId = req.params.requestId;
+            
+            await this.userService.cancelFriendRequest(requestId, userId);
+            res.status(200).json({ message: "Đã hủy yêu cầu kết bạn" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Xóa bạn bè
+    public removeFriend = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            const friendId = req.params.friendId;
+            
+            const user = await this.userService.removeFriend(userId, friendId);
+            res.status(200).json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Lấy danh sách yêu cầu kết bạn đang chờ
+    public getPendingRequests = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user.id;
+            
+            const requests = await this.userService.getPendingRequests(userId);
+            res.status(200).json(requests);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Lấy danh sách bạn bè
+    public getFriends = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+           const userId = req.user.id;
+            
+            const friends = await this.userService.getFriends(userId);
+            res.status(200).json(friends);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
