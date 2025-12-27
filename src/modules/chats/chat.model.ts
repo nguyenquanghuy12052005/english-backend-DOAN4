@@ -50,6 +50,8 @@ import { IChat } from "./chat.interface";
             default: true,
             },
         }]
+        
       
     });
+    ChatSchema.index({ user1: 1, user2: 1 }, { unique: true });
     export default mongoose.model<IChat & Document>('chat', ChatSchema);

@@ -17,9 +17,15 @@ export default class ChatController {
             next(error);
         }
     }
-
-
-   
-
-    
+public getChat = async (req: Request, res: Response, next: NextFunction) =>{
+        try {
+        
+        const userId = req.user.id;
+        const result = await this.chatService.getChat(userId);
+        res.status(201).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+ 
 }
