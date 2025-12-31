@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Route } from "../../core/interface";
 import QuizController from "./quiz.controller";
 import CreateQuizDto from "./dtos/create_quiz.dtos";
-import { adminMiddleware, authMiddleware, validationMiddleware } from "../../core/middleware";
+import { authMiddleware, validationMiddleware } from "../../core/middleware"; // Bỏ adminMiddleware nếu chưa dùng
 
 export default class QuizRoute implements Route {
     public path = "/api/quizzes";
@@ -16,9 +16,7 @@ export default class QuizRoute implements Route {
 
     private initializeRoutes() {
         // Tạo Quiz
-        this.router.post(this.path, (req, res, next) => {
-            this.quizController.createQuiz(req, res, next);
-        });
+        this.router.post(this.path, this.quizController.createQuiz);
 
         // Cập nhật Quiz
         this.router.put(this.path + '/:id', validationMiddleware(CreateQuizDto, true), this.quizController.updateQuiz); 

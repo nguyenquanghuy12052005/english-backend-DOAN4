@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import QuizService from "./quiz.service";
 import CreateQuizDto from "./dtos/create_quiz.dtos";
-import { TokenData } from "../auth";
 import { IQuiz } from "./quiz.interface";
-import SubmitQuizDto from "./dtos/submit_quiz.dtos"; // Lưu ý file này bạn cần có
+import SubmitQuizDto from "./dtos/submit_quiz.dtos"; 
 
 export default class QuizController {
     private quizService = new QuizService();
@@ -51,8 +50,7 @@ export default class QuizController {
     public submitQuiz = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const model: SubmitQuizDto = req.body;
-            
-            // Lấy user ID từ token (cần đảm bảo middleware auth đã chạy và gắn user vào req)
+            // Lấy user ID từ token (req.user do middleware auth gán)
             const userId = (req as any).user.id; 
             
             const result = await this.quizService.submitQuiz(userId, model);
@@ -64,8 +62,8 @@ export default class QuizController {
 
     public deleteQuiz = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const resultr = await this.quizService.deleteQuiz(req.params.id)      
-            res.status(200).json(resultr);
+            const result = await this.quizService.deleteQuiz(req.params.id)      
+            res.status(200).json(result);
         } catch (error) {
             next(error);
         }
@@ -73,9 +71,9 @@ export default class QuizController {
 
     public getQuizResultById = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const quizId: string = req.params.id;
-            const quiz =  await this.quizService.getQuizResultById(quizId);
-            res.status(200).json(quiz);
+            const resultId: string = req.params.id;
+            const result =  await this.quizService.getQuizResultById(resultId);
+            res.status(200).json(result);
         } catch (error) {
             next(error);
         }

@@ -4,7 +4,7 @@ import { IQuiz } from "./quiz.interface";
 const OptionSchema = new mongoose.Schema({
     text: { type: String, required: true },
     image: { type: String }
-}, { _id: false }); // Thêm _id: false để đỡ sinh id rác cho option
+}, { _id: false }); 
 
 const QuestionSchema = new mongoose.Schema({
     questionText: { type: [String], required: true },
@@ -20,11 +20,8 @@ const QuizSchema = new mongoose.Schema<IQuiz>(
     {
         title: { type: String, required: true },
         description: String,
-        
-        // --- QUAN TRỌNG: PHẢI THÊM DÒNG NÀY ---
         audio: { type: String, default: "" }, 
-        // -------------------------------------
-
+        
         part: {
             type: Number,
             required: false, 
@@ -45,8 +42,11 @@ const QuizSchema = new mongoose.Schema<IQuiz>(
         },
         timeLimit: { type: Number, required: true },
         questions: { type: [QuestionSchema], required: true },
+        
+        // --- HẾT LỖI TẠI ĐÂY ---
         totalQuestions: { type: Number, default: 0 },
         maxScore: { type: Number, default: 0 }
+        // ----------------------
     },
     {
         timestamps: true,
@@ -54,10 +54,9 @@ const QuizSchema = new mongoose.Schema<IQuiz>(
     }
 );
 
-// Auto tính totalQuestions & maxScore
+// Middleware tự động tính toán số câu hỏi và điểm tối đa trước khi lưu
 QuizSchema.pre("save", function (next) {
     const quiz = this as any; 
-
     if (quiz.questions && Array.isArray(quiz.questions)) {
         quiz.totalQuestions = quiz.questions.length;
         quiz.maxScore = quiz.questions.reduce((sum: number, q: any) => {
@@ -67,7 +66,6 @@ QuizSchema.pre("save", function (next) {
         quiz.totalQuestions = 0;
         quiz.maxScore = 0;
     }
-
     next();
 });
 
