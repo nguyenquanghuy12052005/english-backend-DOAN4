@@ -10,6 +10,8 @@ import { IFriendRequest, IUser } from './user.interface';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { IPagination } from '../../core/interface';
+import SocketService from '../../core/socket/socket'; 
+
 
 class UserService {
     public userSchema = UserSchema;
@@ -145,7 +147,9 @@ class UserService {
         };
     }
 
-    // --- FRIEND REQUEST METHODS ---
+    // =========================================================================
+    // FRIEND REQUEST METHODS với SOCKET NOTIFICATION
+    // =========================================================================
 
     public async sendFriendRequest(senderId: string, receiverId: string): Promise<IFriendRequest> {
         // Kiểm tra xem có phải tự gửi cho mình không
@@ -199,6 +203,18 @@ class UserService {
             $addToSet: { pendingRequests: senderUser._id }
         });
 
+        // 🔥 GỬI THÔNG BÁO SOCKET REAL-TIME
+        const mutualFriends = await this.getMutualFriendsCount(senderId, receiverId);
+        
+        // Gửi notification qua SocketService
+        SocketService.notifyFriendRequest(receiverId, {
+             _id: (friendRequest._id as mongoose.Types.ObjectId).toString(),
+            senderId: senderUser.userId,
+            senderName: senderUser.name || 'Người dùng',
+            senderAvatar: senderUser.avatar ?? null,
+            mutual: mutualFriends
+        });
+
         return friendRequest;
     }
 
@@ -250,6 +266,13 @@ class UserService {
             }
         });
 
+        // 🔥 GỬI THÔNG BÁO SOCKET: Người gửi request được biết đã được chấp nhận
+        SocketService.notifyFriendRequestAccepted(request.senderId, {
+            userId: receiverUser.userId,
+            name: receiverUser.name || 'Người dùng',
+            avatar: receiverUser.avatar ?? null
+        });
+
         return receiverUser;
     }
 
@@ -281,6 +304,9 @@ class UserService {
             await this.userSchema.findByIdAndUpdate(senderUser._id, {
                 $pull: { sentRequests: receiverUser._id }
             });
+
+            // 🔥 GỬI THÔNG BÁO SOCKET
+            SocketService.notifyFriendRequestRejected(request.senderId, request.receiverId);
         }
     }
 
@@ -309,6 +335,9 @@ class UserService {
             await this.userSchema.findByIdAndUpdate(senderUser._id, {
                 $pull: { sentRequests: receiverUser._id }
             });
+
+            // 🔥 GỬI THÔNG BÁO SOCKET
+            SocketService.notifyFriendRequestCancelled(request.receiverId, requestId);
         }
     }
 
@@ -337,14 +366,37 @@ class UserService {
             status: 'accepted'
         });
 
+        // 🔥 GỬI THÔNG BÁO SOCKET
+        SocketService.notifyFriendRemoved(friendId, userId);
+
         return await this.userSchema.findOne({ userId });
     }
 
-    public async getPendingRequests(userId: string): Promise<IFriendRequest[]> {
-        return await this.friendRequestSchema.find({
+    public async getPendingRequests(userId: string): Promise<any[]> {
+        const requests = await this.friendRequestSchema.find({
             receiverId: userId,
             status: 'pending'
         }).sort({ createdAt: -1 });
+
+        // Lấy thông tin chi tiết của người gửi
+        const requestsWithDetails = await Promise.all(
+            requests.map(async (req) => {
+                const sender = await this.userSchema.findOne({ userId: req.senderId });
+                const mutualFriends = await this.getMutualFriendsCount(userId, req.senderId);
+                
+                return {
+                    _id: req._id,
+                    senderId: req.senderId,
+                    name: sender?.name || 'Người dùng',
+                    avatar: sender?.avatar || null,
+                    level: sender?.level || 1,
+                    mutual: mutualFriends,
+                    createdAt: req.createdAt
+                };
+            })
+        );
+
+        return requestsWithDetails;
     }
 
     public async getFriends(userId: string): Promise<IUser[]> {
@@ -356,9 +408,23 @@ class UserService {
         
         const friends = await this.userSchema.find({
             userId: { $in: user.friends }
-        }).select('_id userId name avatar');
+        }).select('_id userId name avatar level role');
         
         return friends;
+    }
+
+    // Helper: Đếm số bạn chung
+    private async getMutualFriendsCount(userId1: string, userId2: string): Promise<number> {
+        const user1 = await this.userSchema.findOne({ userId: userId1 });
+        const user2 = await this.userSchema.findOne({ userId: userId2 });
+
+        if (!user1 || !user2) return 0;
+
+        const friends1 = user1.friends || [];
+        const friends2 = user2.friends || [];
+
+        const mutualCount = friends1.filter(f => friends2.includes(f)).length;
+        return mutualCount;
     }
 
     private createToken(user: IUser): TokenData {

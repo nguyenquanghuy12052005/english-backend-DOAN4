@@ -5,8 +5,6 @@ import jwt from 'jsonwebtoken';
 import { DataStoredInToken } from "../../modules/auth/auth.interface";
 
 const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-
-    //lấy token
     const token = req.header('x-auth-token');
 
     if(!token){
@@ -14,10 +12,8 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     }
 
     try {
-        //check và giải mã token
         const user = jwt.verify(token, process.env.JWT_TOKEN_SECRET!) as DataStoredInToken;
 
-        //req.user nếu chưa tồn tại Gán user.id từ token payload vào request
         if(!req.user) req.user = {id: ""};
         req.user.id = user.id;
         next();
