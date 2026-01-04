@@ -37,7 +37,7 @@ export default class VnPayController {
     const fullOrderInfo = `${orderInfo}|userId:${userId}|quizId:${quizId}`;
 
     const paymentUrl = await this.vnPayService.createPaymentUrl(
-      { amount, orderInfo: orderInfo },
+      { amount, orderInfo: fullOrderInfo  },
     
     );
     

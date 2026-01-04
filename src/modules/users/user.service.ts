@@ -82,6 +82,10 @@ class UserService {
         if (!user) throw new httpException(400, `Không tìm thấy User ID`);
 
         const updateData: any = { name: model.name };
+
+           if (model.avatar) {
+        updateData.avatar = model.avatar;
+    }
         if (model.password) {
             const salt = await bcryptjs.genSalt(10);
             updateData.password = await bcryptjs.hash(model.password, salt);
