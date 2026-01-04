@@ -9,6 +9,7 @@ import PostRoute from "./modules/posts/post.route";
 import ChatRoute from "./modules/chats/chat.route";
 import VocalRoute from "./modules/vocal/vocal.route";
 import QuizRoute from "./modules/quiz/quiz.route";
+import GeminiRoute from "./modules/gemini/gemini.route";
 import "dotenv";
 validateEnv(); //validate trước khi tạo nếu nó empty thì báo luôn cho lóng 
 const routes = [
@@ -19,7 +20,7 @@ const routes = [
     new ChatRoute(),
     new VocalRoute(),
     new QuizRoute(),
-    
+    new GeminiRoute(),
     
     
 ];
