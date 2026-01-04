@@ -1,83 +1,72 @@
 import { NextFunction, Request, Response } from "express";
 import QuizService from "./quiz.service";
-import CreateQuizDto from "./dtos/create_quiz.dtos";
-import { TokenData } from "../auth";
-import { IQuiz } from "./quiz.interface";
-import SubmitQuizDto from "./dtos/submit_quiz.dtos"; // Lưu ý file này bạn cần có
 
 export default class QuizController {
     private quizService = new QuizService();
 
+    // Create
     public createQuiz = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const model: CreateQuizDto = req.body;
-            const result: IQuiz = await this.quizService.createQuiz(model);
+            const result = await this.quizService.createQuiz(req.body);
             res.status(201).json(result);
-        } catch (error) {
-            next(error);
-        }
+        } catch (error) { next(error); }
     }
 
-    public getQuizById = async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const quizId: string = req.params.id;
-            const quiz =  await this.quizService.getQuizById(quizId);
-            res.status(200).json(quiz);
-        } catch (error) {
-            next(error);
-        }
-    }
-
+    // Update
     public updateQuiz = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const quizId: string = req.params.id;
-            const model: CreateQuizDto = req.body;
-            const result: IQuiz = await this.quizService.updateQuiz(quizId, model);
+            const result = await this.quizService.updateQuiz(req.params.id, req.body);
             res.status(200).json(result);
-        } catch (error) {
-            next(error);
-        }
+        } catch (error) { next(error); }
     }
 
+    // Get All
     public getAllQuiz = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const quizzes =  await this.quizService.getAllQUiz();
-            res.status(200).json(quizzes);
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    public submitQuiz = async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const model: SubmitQuizDto = req.body;
-            
-            // Lấy user ID từ token (cần đảm bảo middleware auth đã chạy và gắn user vào req)
-            const userId = (req as any).user.id; 
-            
-            const result = await this.quizService.submitQuiz(userId, model);
+            const result = await this.quizService.getAllQUiz();
             res.status(200).json(result);
-        } catch (error) {
-            next(error);
-        }
+        } catch (error) { next(error); }
     }
 
+    // Get One
+    public getQuizById = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const result = await this.quizService.getQuizById(req.params.id);
+            res.status(200).json(result);
+        } catch (error) { next(error); }
+    }
+
+    // Delete
     public deleteQuiz = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const resultr = await this.quizService.deleteQuiz(req.params.id)      
-            res.status(200).json(resultr);
-        } catch (error) {
-            next(error);
-        }
+            const result = await this.quizService.deleteQuiz(req.params.id);
+            res.status(200).json(result);
+        } catch (error) { next(error); }
     }
 
+    // Submit
+    public submitQuiz = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = (req as any).user.id; // Lấy ID từ Token (authMiddleware)
+            const result = await this.quizService.submitQuiz(userId, req.body);
+            res.status(200).json(result);
+        } catch (error) { next(error); }
+    }
+
+    // Get Result Detail
     public getQuizResultById = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const quizId: string = req.params.id;
-            const quiz =  await this.quizService.getQuizResultById(quizId);
-            res.status(200).json(quiz);
-        } catch (error) {
-            next(error);
-        }
+            const result = await this.quizService.getQuizResultById(req.params.id);
+            res.status(200).json(result);
+        } catch (error) { next(error); }
+    }
+
+    // Get User History
+    public getHistory = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = (req as any).user.id;
+            const history = await this.quizService.getHistoryByUserId(userId);
+            res.status(200).json(history);
+        } catch (error) { next(error); }
     }
 }

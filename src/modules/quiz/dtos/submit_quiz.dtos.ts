@@ -1,5 +1,4 @@
-// submit_quiz_dto.ts
-import { IsString, IsNotEmpty, IsArray, ValidateNested, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, ValidateNested, IsNumber, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UserAnswerDto {
@@ -8,8 +7,8 @@ export class UserAnswerDto {
     questionId!: string;
 
     @IsString()
-    @IsNotEmpty()
-    selectedOption!: string;
+    @IsOptional() // <--- QUAN TRỌNG: Thêm dòng này để không bị lỗi 400 khi user bỏ qua câu hỏi
+    selectedOption?: string;
 }
 
 export default class SubmitQuizDto {
