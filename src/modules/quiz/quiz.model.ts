@@ -40,6 +40,11 @@ const QuizSchema = new mongoose.Schema<IQuiz>(
             enum: ["Easy", "Medium", "Hard"],
             default: "Medium"
         },
+        userPay: [{ type: String }],
+        vip: { type: String,
+            required: false, 
+            default: 0    
+           },
         timeLimit: { type: Number, required: true },
         questions: { type: [QuestionSchema], required: true },
         

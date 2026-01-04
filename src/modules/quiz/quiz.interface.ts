@@ -1,8 +1,5 @@
 import { Document, Types } from "mongoose";
 
-// ==========================================
-// PHẦN 1: INTERFACE CHO ĐỀ THI (QUIZ)
-// ==========================================
 
 export interface IOption {
     text: string;
@@ -29,6 +26,8 @@ export interface IQuiz extends Document {
     type?: string; 
     part?: number;
     level?: string;
+    userPay?: string[];
+    vip?: string;
     
     // --- KHU VỰC SỬA LỖI: THÊM 2 TRƯỜNG NÀY ---
     totalQuestions?: number; 

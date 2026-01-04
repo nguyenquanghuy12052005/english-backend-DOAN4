@@ -1,23 +1,37 @@
 import { Router } from "express";
 import { Route } from "../../core/interface";
-
-import {  authMiddleware} from "../../core/middleware";
+import { authMiddleware } from "../../core/middleware";
 import VnPayController from "./vnpay.controller";
 
+export default class VnPayRoute implements Route {
+  public path = "/api/vnpay";
+  public router = Router();
+  public vnPayController = new VnPayController();
 
-export default class VnPayRoute implements Route{
-    public path ="/api/vnpay";
-    public router = Router();
+  constructor() {
+    this.initializeRoutes();
+  }
 
-    public vnPayController = new VnPayController();
+  private initializeRoutes() {
+    // Tạo payment URL 
+    this.router.post(
+      this.path, 
+      authMiddleware, 
+      this.vnPayController.createQrVnPay
+    );
 
-    constructor(){
-        this.initializeRoutes();
-    }
+   
+    this.router.get(
+      `${this.path}/callback`,
+     
+      this.vnPayController.handlePaymentCallback
+    );
 
-    private initializeRoutes() {
-        console.log(this.path)
-        this.router.post(this.path, authMiddleware, this.vnPayController.createQrVnPay); 
-
-    }
-} 
+    // Kiểm tra trạng thái thanh toán
+    this.router.get(
+      `${this.path}/check/:quizId`,
+      authMiddleware,
+      this.vnPayController.checkPaymentStatus
+    );
+  }
+}

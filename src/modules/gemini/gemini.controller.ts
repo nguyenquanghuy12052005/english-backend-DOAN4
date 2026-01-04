@@ -5,7 +5,7 @@ import { Request, Response } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export class GeminiController {
-    // ✅ SỬA LẠI: Dùng process.env như code cũ để an toàn và không bị lỗi ký tự lạ
+ 
     private genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
     
     // Dùng model 1.5 flash cho nhanh và tiết kiệm
