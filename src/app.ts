@@ -27,6 +27,8 @@ class App {
     this.initializeErrorMiddleware();
   }
 
+  
+
  
   public listen() {
     this.server = createServer(this.app);
@@ -79,6 +81,7 @@ class App {
     });
     Logger.info(" Kết nối MongoDB Atlas thành công!");
   }
+  
 }
 
 export default App;

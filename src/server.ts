@@ -10,6 +10,7 @@ import ChatRoute from "./modules/chats/chat.route";
 import VocalRoute from "./modules/vocal/vocal.route";
 import QuizRoute from "./modules/quiz/quiz.route";
 import "dotenv";
+import { VnPayRoute } from "./modules/vnpay";
 validateEnv(); //validate trước khi tạo nếu nó empty thì báo luôn cho lóng 
 const routes = [
     new IndexRoute(),
@@ -19,7 +20,7 @@ const routes = [
     new ChatRoute(),
     new VocalRoute(),
     new QuizRoute(),
-    
+    new VnPayRoute(),
     
     
 ];
