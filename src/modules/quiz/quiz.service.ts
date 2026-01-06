@@ -12,14 +12,12 @@ class QuizService {
     public userSchema = UserSchema;
     public quizResultSchema = QuizResultSchema;
 
-    /**
-     * Helper: Chuẩn hóa dữ liệu đầu vào
-     */
+   //dữ liệu đầu vào 
     private normalizeToModelStructure(quizDto: CreateQuizDto): any[] {
         const inputData = quizDto as any;
         let finalQuestions: any[] = [];
 
-        // 1. Câu hỏi rời
+        // Câu hỏi rời
         if (inputData.questions && Array.isArray(inputData.questions)) {
             const processedSimpleQuestions = inputData.questions.map((q: any) => ({
                 questionText: Array.isArray(q.questionText) ? q.questionText : [q.questionText || "No Content"],
@@ -55,7 +53,6 @@ class QuizService {
         return finalQuestions;
     }
 
-    // --- CREATE ---
     public async createQuiz(quizDto: CreateQuizDto): Promise<IQuiz> {
         const existingQuiz = await this.quizSchema.findOne({ title: quizDto.title }).exec();
         if (existingQuiz) throw new httpException(400, "Tên bài thi đã tồn tại");
@@ -78,7 +75,7 @@ class QuizService {
         return await newQuiz.save();
     }
 
-    // --- UPDATE ---
+    //UPDATE 
     public async updateQuiz(quizId: string, quizDto: CreateQuizDto): Promise<IQuiz> {
         if (!mongoose.isValidObjectId(quizId)) throw new httpException(400, "ID không hợp lệ");
         
@@ -107,7 +104,7 @@ class QuizService {
         return updatedQuiz;
     }
 
-    // --- GET & DELETE ---
+    //GET & DELETE
     public async getQuizById(id: string): Promise<IQuiz> {
         if (!mongoose.isValidObjectId(id)) throw new httpException(400, "ID không hợp lệ");
         const quiz = await this.quizSchema.findById(id);
@@ -126,7 +123,7 @@ class QuizService {
         return deleted;
     }
 
-    // --- SUBMIT ---
+    //  SUBMIT 
     public async submitQuiz(userId: string, submitData: SubmitQuizDto): Promise<IQuizResult> {
         const quiz = await this.quizSchema.findById(submitData.quizId);
         if (!quiz) throw new httpException(404, "Quiz not found");
@@ -168,13 +165,13 @@ class QuizService {
         return await result.save();
     }
 
-    // --- RESULT & HISTORY ---
+    //  RESULT & HISTORY 
     public async getQuizResultById(id: string): Promise<IQuizResult> {
         if (!mongoose.isValidObjectId(id)) throw new httpException(400, "Result ID invalid");
         
         const result = await this.quizResultSchema.findById(id)
             .populate('userId', 'username email')
-            .populate('quizId', 'title questions description level'); // Quan trọng cho AI: Cần questions
+            .populate('quizId', 'title questions description level'); 
         
         if(!result) throw new httpException(404, "Result not found");
         return result;

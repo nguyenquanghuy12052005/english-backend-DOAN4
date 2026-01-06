@@ -131,7 +131,7 @@ class UserService {
         if (!user) throw new httpException(404, 'User not found');
 
         user.xpPoints += xp;
-        // Tăng level: 100 XP cho mỗi level (có thể điều chỉnh)
+        // Tăng level: 100 XP cho mỗi level 
         const newLevel = Math.floor(user.xpPoints / 100 + 1);
         if (newLevel > user.level) {
             user.level = newLevel;
@@ -151,9 +151,7 @@ class UserService {
         };
     }
 
-    // =========================================================================
-    // FRIEND REQUEST METHODS với SOCKET NOTIFICATION
-    // =========================================================================
+  
 
     public async sendFriendRequest(senderId: string, receiverId: string): Promise<IFriendRequest> {
         // Kiểm tra xem có phải tự gửi cho mình không
@@ -207,7 +205,7 @@ class UserService {
             $addToSet: { pendingRequests: senderUser._id }
         });
 
-        // 🔥 GỬI THÔNG BÁO SOCKET REAL-TIME
+        //  GỬI THÔNG BÁO SOCKET REAL-TIME
         const mutualFriends = await this.getMutualFriendsCount(senderId, receiverId);
         
         // Gửi notification qua SocketService
@@ -270,7 +268,7 @@ class UserService {
             }
         });
 
-        // 🔥 GỬI THÔNG BÁO SOCKET: Người gửi request được biết đã được chấp nhận
+        // GỬI THÔNG BÁO SOCKET: Người gửi request được biết đã được chấp nhận
         SocketService.notifyFriendRequestAccepted(request.senderId, {
             userId: receiverUser.userId,
             name: receiverUser.name || 'Người dùng',
@@ -309,7 +307,7 @@ class UserService {
                 $pull: { sentRequests: receiverUser._id }
             });
 
-            // 🔥 GỬI THÔNG BÁO SOCKET
+            // GỬI THÔNG BÁO SOCKET
             SocketService.notifyFriendRequestRejected(request.senderId, request.receiverId);
         }
     }
@@ -340,7 +338,7 @@ class UserService {
                 $pull: { sentRequests: receiverUser._id }
             });
 
-            // 🔥 GỬI THÔNG BÁO SOCKET
+            //  GỬI THÔNG BÁO SOCKET
             SocketService.notifyFriendRequestCancelled(request.receiverId, requestId);
         }
     }
@@ -370,7 +368,7 @@ class UserService {
             status: 'accepted'
         });
 
-        // 🔥 GỬI THÔNG BÁO SOCKET
+        // GỬI THÔNG BÁO SOCKET
         SocketService.notifyFriendRemoved(friendId, userId);
 
         return await this.userSchema.findOne({ userId });

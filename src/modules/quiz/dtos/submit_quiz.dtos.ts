@@ -7,7 +7,7 @@ export class UserAnswerDto {
     questionId!: string;
 
     @IsString()
-    @IsOptional() // <--- QUAN TRỌNG: Thêm dòng này để không bị lỗi 400 khi user bỏ qua câu hỏi
+    @IsOptional() 
     selectedOption?: string;
 }
 

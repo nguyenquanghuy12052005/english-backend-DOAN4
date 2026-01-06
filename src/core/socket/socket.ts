@@ -148,10 +148,6 @@ class SocketService {
     }
   }
 
-
-
-
-  
    //Gửi thông báo kết bạn real-time đến người nhận
   public notifyFriendRequest(receiverId: string, requestData: {
     _id: string;

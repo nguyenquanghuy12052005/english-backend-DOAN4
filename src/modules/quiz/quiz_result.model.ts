@@ -4,13 +4,13 @@ import { IQuizResult } from "./quiz.interface";
 const UserAnswerSchema = new Schema({
     questionId: { type: String, required: true },
     
-    // --- ĐÃ SỬA LỖI ---
+  
     selectedOption: { 
         type: String, 
-        required: false, // Cho phép bỏ trống
-        default: null    // Mặc định là null
+        required: false, 
+        default: null    
     },
-    // ------------------
+
 
     isCorrect: { type: Boolean, required: true }, 
     point: { type: Number, required: true }

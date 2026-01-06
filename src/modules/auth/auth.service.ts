@@ -83,8 +83,5 @@ private createToken(user: IUser): TokenData {
     }
 }
 
-
-
-
  }
  export default AuthService;    

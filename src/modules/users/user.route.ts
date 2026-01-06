@@ -15,11 +15,7 @@ export default class UserRoute implements Route {
     }
 
     private initializeRoutes() {
-        // ==================================================================
-        // 1. AUTH & STATIC ROUTES (Đăng ký, Đăng nhập, Danh sách tĩnh)
-        // ==================================================================
-        
-        // Đăng ký User: POST /api/users
+       
         this.router.post(
             this.path, 
             validationMiddleware(RegisterDto, true), 
@@ -50,10 +46,7 @@ export default class UserRoute implements Route {
             this.usersController.getPendingRequests
         );
 
-        // ==================================================================
-        // 2. FEATURE ROUTES (Phân trang & Gửi yêu cầu)
-        // ==================================================================
-
+       
         // Phân trang: GET /api/users/paging
         this.router.get(`${this.path}/paging`, this.usersController.getAllUserPaging);
 
@@ -68,10 +61,7 @@ export default class UserRoute implements Route {
             this.usersController.sendFriendRequest
         );
 
-        // ==================================================================
-        // 3. FRIEND ACTION ROUTES (Chấp nhận, Từ chối, Hủy, Xóa)
-        // ==================================================================
-
+       
         // Chấp nhận kết bạn
         this.router.post(
             `${this.path}/friend-request/:requestId/accept`, 
@@ -100,10 +90,7 @@ export default class UserRoute implements Route {
             this.usersController.removeFriend
         );
 
-        // ==================================================================
-        // 4. USER PROGRESS ROUTES (XP và Level)
-        // ==================================================================
-
+       
         // Thêm XP cho user
         this.router.post(
             `${this.path}/:id/xp`, 
@@ -118,10 +105,7 @@ export default class UserRoute implements Route {
             this.usersController.getUserProgress
         );
 
-        // ==================================================================
-        // 5. PARAM ROUTES (Các route có /:id đặt CUỐI CÙNG để tránh ghi đè)
-        // ==================================================================
-
+       
         // Lấy user theo ID
         this.router.get(`${this.path}/:id`, this.usersController.getUserById);
 

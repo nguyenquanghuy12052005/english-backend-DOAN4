@@ -22,9 +22,6 @@ export default class ChatRoute implements Route{
         this.router.post(this.path,authMiddleware, validationMiddleware(SendMessageDto, true), this.chatController.createChat); 
         this.router.get(this.path,authMiddleware, this.chatController.getChat); 
 
-
-       
-
     }
 
 } 

@@ -8,18 +8,18 @@ export class GeminiController {
  
     private genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
     
-    // Dùng model 1.5 flash cho nhanh và tiết kiệm
+    // Dùng model 1.5 flash 
     private model = this.genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     public explainQuestion = async (req: Request, res: Response) => {
         try {
             const { questionText, options, userAnswer, correctAnswer } = req.body;
 
-            // Log để kiểm tra
-            console.log("\n====== [GỌI AI GIẢI THÍCH ĐA NĂNG] ======");
-            console.log("👉 Câu hỏi:", questionText ? questionText.substring(0, 50) + "..." : "Rỗng");
+            // // Log để kiểm tra
+            // console.log("\n====== [GỌI AI GIẢI THÍCH ĐA NĂNG] ======");
+            // console.log("👉 Câu hỏi:", questionText ? questionText.substring(0, 50) + "..." : "Rỗng");
 
-            // Xử lý options: Dù là Array hay String đều xử lý đẹp
+            // Xử lý options:  Array or String
             let optionsText = "";
             if (Array.isArray(options)) {
                 // Nếu options là mảng object [{text: "A..."}, {text: "B..."}]
@@ -28,8 +28,7 @@ export class GeminiController {
                 optionsText = JSON.stringify(options);
             }
 
-            // --- 📝 PROMPT ĐA NĂNG (Dùng cho cả Part 5, 6, 7) ---
-            // Không nhắc đến Part 6 cụ thể, để AI tự linh hoạt
+            // prompt
             let prompt = `Đóng vai là một giáo viên luyện thi TOEIC chuyên nghiệp (Reading). Hãy giải thích câu hỏi trắc nghiệm sau cho học viên:\n\n`;
             
             prompt += `❓ Đề bài: "${questionText}"\n`;
@@ -56,7 +55,7 @@ export class GeminiController {
             });
 
         } catch (error: any) {
-            console.error("❌ LỖI GOOGLE AI:", error.message);
+            console.error("LỖI GOOGLE AI:", error.message);
 
             // Bắt lỗi quá tải (429) hoặc lỗi Key
             if (error.status === 429 || error.message?.includes("429")) {

@@ -30,8 +30,6 @@ export default class AuthController {
     }
 
 
-
-    // 
     public getOnlineUsers = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const onlineUsers = SocketService.getOnlineUsers();

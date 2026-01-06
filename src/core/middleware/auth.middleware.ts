@@ -8,9 +8,8 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('x-auth-token');
 
     if(!token){
-        return res.status(401).json({message: "không có token cu ơi"});
+        return res.status(401).json({message: "không có token bạn ơi"});
     }
-
     try {
         const user = jwt.verify(token, process.env.JWT_TOKEN_SECRET!) as DataStoredInToken;
 

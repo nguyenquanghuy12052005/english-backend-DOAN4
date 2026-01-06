@@ -29,7 +29,7 @@ export interface IQuiz extends Document {
     userPay?: string[];
     vip?: string;
     
-    // --- KHU VỰC SỬA LỖI: THÊM 2 TRƯỜNG NÀY ---
+
     totalQuestions?: number; 
     maxScore?: number;
     // -----------------------------------------
@@ -37,10 +37,6 @@ export interface IQuiz extends Document {
     createdAt?: Date;
     updatedAt?: Date;
 }
-
-// ==========================================
-// PHẦN 2: INTERFACE CHO KẾT QUẢ (QUIZ RESULT)
-// ==========================================
 
 export interface IUserAnswer {
     questionId: string;

@@ -13,7 +13,7 @@ export class OptionDto {
 
 export class QuestionDto {
     @IsOptional()
-    // Chấp nhận input là String hoặc Mảng String (để linh hoạt)
+   
     questionText?: string | string[]; 
 
     @IsOptional()
@@ -73,14 +73,13 @@ export default class CreateQuizDto {
     @IsString()
     description?: string;
 
-    // --- QUAN TRỌNG: ĐÃ THÊM TRƯỜNG AUDIO ---
-    // Đây là trường bắt buộc để lưu link file nghe chung của bài thi
+
     @IsOptional()
     @IsString()
     audio?: string;
     // ----------------------------------------
 
-    // Mình đổi thành IsNumber để linh hoạt (nhận cả 0 cho FullTest và 1-7 cho Part)
+   
     @IsNumber()
     @IsNotEmpty()
     part!: number;

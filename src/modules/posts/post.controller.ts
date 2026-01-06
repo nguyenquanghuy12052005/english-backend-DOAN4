@@ -52,12 +52,10 @@ export default class PostsController {
 
     public getAllPostPaging = async (req: Request, res: Response, next: NextFunction) =>{
         try {
-          // const keyword: string = req.params.keyword;
+    
             const keyword: string = (req.query.keyword as string) || '';
-          // const page: number = Number(req.params.page);
             const page: number = Number(req.query.page);
-          //  console.log("keyword:", keyword, " | page:", page);
-          const pagination =  await this.postService.getAllPostPaging(keyword, page);
+            const pagination =  await this.postService.getAllPostPaging(keyword, page);
         res.status(200).json(pagination);
         } catch (error) {
             next(error);
@@ -67,7 +65,7 @@ export default class PostsController {
 
       public deletePost = async (req: Request, res: Response, next: NextFunction) =>{
         try {
-          // const keyword: string = req.params.keyword     
+         
                   const  userId = req.user.id; 
                   const postId = req.params.id;
             const resultr = await this.postService.deletePost(userId,postId)      
@@ -81,7 +79,7 @@ export default class PostsController {
     
       public likePost = async (req: Request, res: Response, next: NextFunction) =>{
         try {
-          // const keyword: string = req.params.keyword     
+         
                   const  userId = req.user.id; 
                   const postId = req.params.id;
             const likes = await this.postService.likePost(userId,postId)      
@@ -94,7 +92,7 @@ export default class PostsController {
 
        public unlikePost = async (req: Request, res: Response, next: NextFunction) =>{
         try {
-          // const keyword: string = req.params.keyword     
+             
                   const  userId = req.user.id; 
                   const postId = req.params.id;
             const likes = await this.postService.unlikePost(userId,postId)      
@@ -108,7 +106,7 @@ export default class PostsController {
 
       public addComment = async (req: Request, res: Response, next: NextFunction) =>{
         try {
-          // const keyword: string = req.params.keyword     
+             
                   const  userId = req.user.id; 
                   const  content = req.body.content; 
                   const postId = req.params.id;
@@ -122,7 +120,7 @@ export default class PostsController {
 
        public deleteComment = async (req: Request, res: Response, next: NextFunction) =>{
         try {
-          // const keyword: string = req.params.keyword  
+           
              const commentId = req.params.commentId;    
              const postId = req.params.id;
                   const  userId = req.user.id; 

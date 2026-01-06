@@ -3,9 +3,6 @@ import { httpException } from "../exceptions";
 import { UserSchema } from "../../modules/users";
 
 
-// Extend Express Request interface để có type cho req.user
-
-
  const adminMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Kiểm tra xem user đã được xác thực chưa

@@ -5,7 +5,7 @@ import { IUser } from "./user.interface";
 
 const UserSchema = new mongoose.Schema(
   {
-    userId: { type: String, required: true, unique: true, index: true }, // PK logic (Firebase UID)
+    userId: { type: String, required: true, unique: true, index: true }, 
     email: { type: String, required: true, unique: true, index: true},
     name: { type: String },
     password: { type: String, required: true },

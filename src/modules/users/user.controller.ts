@@ -108,9 +108,7 @@ export default class UsersController {
         }
     }
 
-    // =========================================================================
-    // FRIEND REQUEST CONTROLLERS
-    // =========================================================================
+
 
     public sendFriendRequest = async (req: any, res: Response, next: NextFunction) => {
         try {

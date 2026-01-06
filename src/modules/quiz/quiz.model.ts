@@ -48,7 +48,7 @@ const QuizSchema = new mongoose.Schema<IQuiz>(
         timeLimit: { type: Number, required: true },
         questions: { type: [QuestionSchema], required: true },
         
-        // --- HẾT LỖI TẠI ĐÂY ---
+    
         totalQuestions: { type: Number, default: 0 },
         maxScore: { type: Number, default: 0 }
         // ----------------------
